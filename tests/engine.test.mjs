@@ -318,3 +318,32 @@ test("division saved answers survive removal of borrow steps", async () => {
     assert.deepEqual(upgradeSession(migrated), migrated);
   }
 });
+test("division layers keep digit columns fixed when a decimal point appears", async () => {
+  const { divisionLayout } = await import("../src/divisionLayout.ts");
+  const w = worksheet({ op: 3, nums: ["739.0", "5.0"] }),
+    e = entry({ op: 3, nums: ["739.0", "5.0"] });
+  const before = divisionLayout(w, e, true, true, false);
+  const point = w.steps.findIndex((s) => s.guide === "商の小数点");
+  e.at = point;
+  const after = divisionLayout(w, e, true, true, false);
+  assert.equal(before.x(2) - before.x(1), 44);
+  assert.equal(after.x(2) - after.x(1), 44);
+  assert.equal(before.x(1), after.x(1));
+  assert.ok(after.points.length > before.points.length);
+});
+test("carry notes share their digit's row without increasing row spacing", async () => {
+  const { divisionLayout } = await import("../src/divisionLayout.ts");
+  const p = { op: 3, nums: ["1000", "16"] },
+    w = worksheet(p),
+    e = entry(p);
+  e.at = w.steps.findIndex((s) => s.cell.annotation?.kind === "carry");
+  const layout = divisionLayout(w, e, true, true, false),
+    note = layout.notes.find((c) => c.step === e.at);
+  assert.ok(note);
+  assert.ok(layout.rows.includes(note.annotation.row));
+  assert.equal(layout.height, layout.rows.length * 52);
+  assert.equal(
+    layout.y(note.annotation.row),
+    layout.rows.indexOf(note.annotation.row) * 52,
+  );
+});

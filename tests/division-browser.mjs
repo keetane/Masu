@@ -29,11 +29,23 @@ try {
   near(down.x - difference.x, 44);
   assert.ok(difference.y - product.y < 80);
   assert.equal(await page.locator(".bracket").textContent(), "");
+  assert.equal(await page.locator(".division-rules .bracket").count(), 1);
+  assert.ok(
+    (await page.locator(".division-rules .bracket").getAttribute("d")).includes(
+      "Q",
+    ),
+  );
   assert.equal(
     await page
-      .locator(".bracket")
-      .evaluate((el) => getComputedStyle(el).borderRightWidth),
-    "2px",
+      .locator(".division-digits")
+      .evaluate((el) => getComputedStyle(el).display),
+    "grid",
+  );
+  assert.equal(
+    await page
+      .locator(".division-paper")
+      .evaluate((el) => getComputedStyle(el).backgroundImage),
+    "none",
   );
   await page.getByRole("button", { name: "0", exact: true }).click();
   await page.screenshot({
@@ -117,7 +129,37 @@ try {
       );
       if (anchor) {
         const target = await box(anchor.step);
-        assert.ok(current.y + current.height <= target.y + 1);
+        near(current.x + current.width / 2, target.x + target.width / 2);
+        const ink = async (step) =>
+          page.locator('[data-step="' + step + '"]').evaluate((el) => {
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            const rect = range.getBoundingClientRect();
+            return { top: rect.top, bottom: rect.bottom };
+          });
+        const noteInk = await ink(c.step),
+          digitInk = await ink(anchor.step);
+        assert.ok(
+          noteInk.bottom <= digitInk.top + 1,
+          JSON.stringify({ noteInk, digitInk }),
+        );
+        const previous = w.cells
+          .filter(
+            (other) =>
+              !other.annotation &&
+              !other.point &&
+              other.step !== undefined &&
+              other.col === c.annotation.col &&
+              other.row < c.annotation.row,
+          )
+          .sort((a, b) => b.row - a.row)[0];
+        if (previous) {
+          const previousInk = await ink(previous.step);
+          assert.ok(
+            previousInk.bottom <= noteInk.top + 1,
+            JSON.stringify({ previousInk, noteInk }),
+          );
+        }
       }
     }
   }

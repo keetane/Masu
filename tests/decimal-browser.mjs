@@ -32,7 +32,11 @@ try {
         ),
       );
       assert.equal(
-        (await page.locator(".board .tile:not(button)").allTextContents())
+        (
+          await page
+            .locator(".division-digits .division-target:not(button)")
+            .allTextContents()
+        )
           .join("")
           .trim(),
         "",
