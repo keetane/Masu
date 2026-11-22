@@ -373,3 +373,25 @@ test("normalization moves divisor before dividend and preserves later answers", 
   assert.ok(reset.values.slice(0, 6).every((v) => v === ""));
   assert.equal(reset.values[6], "9");
 });
+test("session IDs also work without secure-context randomUUID", async () => {
+  const { createSessionId } = await import("../src/session.ts");
+  const original = crypto.randomUUID;
+  Object.defineProperty(crypto, "randomUUID", {
+    value: undefined,
+    configurable: true,
+  });
+  try {
+    const ids = new Set(Array.from({ length: 100 }, () => createSessionId()));
+    assert.equal(ids.size, 100);
+    for (const id of ids)
+      assert.match(
+        id,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+      );
+  } finally {
+    Object.defineProperty(crypto, "randomUUID", {
+      value: original,
+      configurable: true,
+    });
+  }
+});

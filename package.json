@@ -11,7 +11,8 @@
     "test:e2e": "node --experimental-strip-types tests/browser.mjs",
     "bundle": "node scripts/pages.mjs && npm run build && bash scripts/bundle.sh",
     "test:division": "node --experimental-strip-types tests/division-browser.mjs",
-    "test:decimal": "node --experimental-strip-types tests/decimal-browser.mjs"
+    "test:decimal": "node --experimental-strip-types tests/decimal-browser.mjs",
+    "test:lan": "node --experimental-strip-types tests/lan-browser.mjs"
   },
   "dependencies": {
     "react": "19.2.7",

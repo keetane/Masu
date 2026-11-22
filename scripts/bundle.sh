@@ -15,6 +15,7 @@ cat > "$app/Info.plist" <<'PLIST'
 <key>CFBundleIdentifier</key><string>local.masu.workbook</string>
 <key>CFBundleVersion</key><string>1</string><key>CFBundleShortVersionString</key><string>1.0</string>
 <key>CFBundlePackageType</key><string>APPL</string><key>CFBundleExecutable</key><string>Masu</string>
+<key>NSLocalNetworkUsageDescription</key><string>同じWi-FiのiPhoneからMasuを利用するために、ローカルネットワークへ接続します。</string>
 <key>CFBundleIconFile</key><string>Masu.icns</string><key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
