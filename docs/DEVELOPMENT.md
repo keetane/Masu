@@ -58,7 +58,7 @@ npm run bundle
 
 ## Web配信
 
-`dist/` を静的配信できます。相対baseとハッシュ遷移を使用しています。広告・外部解析の導入、広告アカウント登録、公開先へのデプロイは運営条件の確定後に行います。公開用の運営者・問い合わせ先は実際の運営情報に更新してください。
+`dist/` を静的配信できます。相対baseとハッシュ遷移を使用しています。広告・外部解析の導入、広告アカウント登録、公開先へのデプロイは運営条件の確定後に行います。公開版の運営表示はkeetane、問い合わせ窓口は公開リポジトリのGitHub Issuesです。
 
 - [設計指示書](../APP_DESIGN.md)
 - [権利・公開方針](../LICENSE_AND_RELEASE.md)
@@ -84,4 +84,4 @@ npm run test:publication
 
 `docs/dependency-licenses.csv`は全lockfile項目の台帳です。OS固有でインストールされていない任意依存や、ライセンス本文のない開発用依存は確認範囲を明記します。`node_modules/`、開発ツール本体、旧アプリを配布対象へ追加しないでください。
 
-公開前に運営者の表示名、実際の連絡先、公開リポジトリ・URLを確定し、使い方・運営ページとREADMEに反映してください。このリポジトリでは公開先を推測して固定していません。GitHubへのpush、Pagesの有効化、広告の有効化は本ガイドの作成では実行していません。
+公開先は https://keetane.github.io/Masu/ 、ソースは https://github.com/keetane/Masu です。mainへのpushまたは手動実行で、.github/workflows/pages.ymlが検証・ビルド後にdistのみをPagesへ公開します。ビルドとデプロイを分離し、公開権限はデプロイジョブだけに付けています。Actionは公式の固定コミットを使用します。広告は有効化していません。

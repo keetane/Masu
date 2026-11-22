@@ -85,6 +85,17 @@ try {
   for (const slug of ["about", "terms", "privacy", "licenses"]) {
     await page.goto(base + slug + "/index.html");
     await page.reload();
+    if (slug === "about") {
+      assert.equal(
+        await page
+          .getByRole("link", { name: "お問い合わせ（GitHub Issues）" })
+          .getAttribute("href"),
+        "https://github.com/keetane/Masu/issues",
+      );
+      assert.ok(
+        (await page.locator("main").innerText()).includes("運営：keetane"),
+      );
+    }
     const home = page.getByRole("link", { name: "← Masu ホーム" });
     assert.equal(await home.getAttribute("href"), "../index.html");
     await home.click();
