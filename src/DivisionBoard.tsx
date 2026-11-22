@@ -1,3 +1,4 @@
+import { DivisionMark } from "./DivisionMark";
 import { DivisionNormalization } from "./DivisionNormalization";
 import { normalizationSteps } from "./normalization";
 import type { CSSProperties } from "react";
@@ -138,45 +139,30 @@ export function DivisionBoard({
           height={layout.height}
           aria-hidden="true"
         >
-          <path
-            className="bracket"
-            d={
-              "M " +
-              (left - 14) +
-              " " +
-              (top + 1) +
-              " Q " +
-              left +
-              " " +
-              (top + 1) +
-              " " +
-              left +
-              " " +
-              (top + 14) +
-              " V " +
-              (top + 44)
-            }
+          <DivisionMark
+            left={left}
+            top={top + 2}
+            right={layout.x(layout.max) + divisionDigitWidth}
           />
-          {layout.lines.map((line, i) => {
-            const header = line.row === w.bracket!.row;
-            const y = header
-              ? top + 1
-              : layout.y(line.row - 1) + divisionRowHeight - 1;
-            return (
-              <path
-                key={i}
-                d={
-                  "M " +
-                  layout.x(line.left) +
-                  " " +
-                  y +
-                  " H " +
-                  (layout.x(Math.min(line.right, layout.max)) +
-                    divisionDigitWidth)
-                }
-              />
-            );
-          })}
+          {layout.lines
+            .filter((line) => line.row !== w.bracket!.row)
+            .map((line, i) => {
+              const y = layout.y(line.row - 1) + divisionRowHeight - 1;
+              return (
+                <path
+                  key={i}
+                  d={
+                    "M " +
+                    layout.x(line.left) +
+                    " " +
+                    y +
+                    " H " +
+                    (layout.x(Math.min(line.right, layout.max)) +
+                      divisionDigitWidth)
+                  }
+                />
+              );
+            })}
         </svg>
       </div>
     </div>

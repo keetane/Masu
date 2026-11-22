@@ -32,7 +32,7 @@ try {
   assert.equal(await page.locator(".division-rules .bracket").count(), 1);
   assert.ok(
     (await page.locator(".division-rules .bracket").getAttribute("d")).includes(
-      "Q",
+      "C",
     ),
   );
   assert.equal(

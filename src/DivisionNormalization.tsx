@@ -1,3 +1,4 @@
+import { DivisionMark } from "./DivisionMark";
 import { useEffect, useRef, useState } from "react";
 import type { BoardProps } from "./Board";
 import { normalizationSteps, type DecimalMove } from "./normalization";
@@ -177,6 +178,20 @@ function Operand({
 export function DivisionNormalization({ w, e, onNormalize }: BoardProps) {
   const groups = normalizationSteps(w),
     divisorTurn = e.at < groups.divisor.length;
+  const divisorDigits = (
+    divisorTurn ? e.p.nums[1] : w.normalization!.divisor
+  ).replace(".", "").length;
+  const dividend = e.p.nums[0];
+  const initialPoint = dividend.includes(".")
+    ? dividend.indexOf(".")
+    : dividend.length;
+  const dividendDigits = Math.max(
+    dividend.replace(".", "").length,
+    divisorTurn ? 0 : initialPoint + w.normalization!.shift,
+  );
+  const divisorWidth = divisorDigits * digitWidth + 24;
+  const dividendWidth = dividendDigits * digitWidth + 24;
+
   return (
     <section className="normalization-card" aria-label="小数点の移動">
       <p className="drag-instruction" aria-live="polite">
@@ -185,27 +200,36 @@ export function DivisionNormalization({ w, e, onNormalize }: BoardProps) {
       </p>
       <div className="normalization-scroll">
         <div className="normalization-problem">
-          <Operand
-            value={e.p.nums[1]}
-            normalized={w.normalization!.divisor}
-            shift={w.normalization!.shift}
-            label="除数"
-            kind="divisor"
-            active={divisorTurn}
-            moved={!divisorTurn}
-            onMove={onNormalize!}
-          />
-          <span className="normalization-bracket" aria-hidden="true" />
-          <Operand
-            value={e.p.nums[0]}
-            normalized={w.normalization!.dividend}
-            shift={w.normalization!.shift}
-            label="被除数"
-            kind="dividend"
-            active={!divisorTurn}
-            moved={false}
-            onMove={onNormalize!}
-          />
+          <div className="normalization-equation">
+            <Operand
+              value={e.p.nums[1]}
+              normalized={w.normalization!.divisor}
+              shift={w.normalization!.shift}
+              label="除数"
+              kind="divisor"
+              active={divisorTurn}
+              moved={!divisorTurn}
+              onMove={onNormalize!}
+            />
+            <span className="normalization-bracket-space" aria-hidden="true" />
+            <Operand
+              value={e.p.nums[0]}
+              normalized={w.normalization!.dividend}
+              shift={w.normalization!.shift}
+              label="被除数"
+              kind="dividend"
+              active={!divisorTurn}
+              moved={false}
+              onMove={onNormalize!}
+            />
+            <svg className="normalization-rules" aria-hidden="true">
+              <DivisionMark
+                left={divisorWidth + 14 + 12}
+                top={38}
+                right={divisorWidth + 14 + dividendWidth - 12}
+              />
+            </svg>
+          </div>
         </div>
       </div>
       {!divisorTurn && (
