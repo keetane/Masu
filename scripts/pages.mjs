@@ -57,7 +57,7 @@ for (const [slug, [title, ...body]] of Object.entries(pages)) {
     "public/" + slug + "/index.html",
     '<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' +
       title +
-      ' | Masu</title><style>body{font:16px/1.8 system-ui;background:#f8f7ef;color:#194c40;max-width:48rem;margin:3rem auto;padding:1rem}p{white-space:pre-wrap;overflow-wrap:anywhere}a{color:inherit}</style><main><a href="../index.html">← Masu 練習帳</a><h1>' +
+      ' | Masu</title><style>body{font:16px/1.8 system-ui;background:#f8f7ef;color:#194c40;max-width:48rem;margin:3rem auto;padding:1rem}p{white-space:pre-wrap;overflow-wrap:anywhere}a{color:inherit}</style><main><a href="../index.html">← Masu ホーム</a><h1>' +
       title +
       "</h1>" +
       body.map((t) => "<p>" + esc(t) + "</p>").join("") +

@@ -322,7 +322,7 @@ function App() {
         </a>
         <nav>
           {[
-            ["home", "練習帳"],
+            ["home", "ホーム"],
             ["history", "履歴"],
             ["settings", "設定"],
           ].map(([r, t]) => (
