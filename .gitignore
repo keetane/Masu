@@ -4,3 +4,4 @@ dist/
 *.log
 Masu.app/
 Icon?
+!docs/dependency-licenses.csv
