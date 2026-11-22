@@ -1,4 +1,5 @@
 import type { Sheet } from "./engine";
+import type { DecimalMove } from "./normalization";
 import type { Entry } from "./session";
 import { DivisionBoard } from "./DivisionBoard";
 import { useBoardScroll } from "./useBoardScroll";
@@ -8,6 +9,7 @@ export type BoardProps = {
   nav?: boolean;
   select?: (n: number) => void;
   solved?: boolean;
+  onNormalize?: (move: DecimalMove) => void;
 };
 export function Board(props: BoardProps) {
   return props.w.bracket ? (

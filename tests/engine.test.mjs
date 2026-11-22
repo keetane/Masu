@@ -347,3 +347,29 @@ test("carry notes share their digit's row without increasing row spacing", async
     layout.rows.indexOf(note.annotation.row) * 52,
   );
 });
+test("normalization moves divisor before dividend and preserves later answers", async () => {
+  const { normalizationSteps, applyDecimalMove } =
+    await import("../src/normalization.ts");
+  const p = { op: 3, nums: ["739.0", "5.0"] },
+    w = worksheet(p),
+    e = entry(p),
+    groups = normalizationSteps(w);
+  assert.equal(applyDecimalMove(w, e, "dividend"), null);
+  e.values[groups.count] = "9";
+  const afterDivisor = { ...e, ...applyDecimalMove(w, e, "divisor") };
+  assert.equal(afterDivisor.at, 2);
+  assert.deepEqual(afterDivisor.values.slice(0, 2), ["5", "0"]);
+  assert.ok(afterDivisor.values.slice(2, 6).every((v) => v === ""));
+  const done = {
+    ...afterDivisor,
+    ...applyDecimalMove(w, afterDivisor, "dividend"),
+  };
+  assert.equal(done.at, 6);
+  assert.deepEqual(done.values.slice(0, 6), ["5", "0", "7", "3", "9", "0"]);
+  assert.equal(done.values[6], "9");
+  assert.ok(validSession({ id: "test", index: 0, items: [done] }));
+  const reset = { ...done, ...applyDecimalMove(w, done, "reset") };
+  assert.equal(reset.at, 0);
+  assert.ok(reset.values.slice(0, 6).every((v) => v === ""));
+  assert.equal(reset.values[6], "9");
+});

@@ -684,3 +684,152 @@ button.division-target:disabled {
 .division-target.note.active {
   color: #183f35;
 }
+.normalization-card {
+  background: #fffef9;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  padding: 18px 8px;
+}
+.drag-instruction {
+  text-align: center;
+  margin: 0 0 16px;
+  line-height: 1.7;
+  font-size: 15px;
+}
+.normalization-scroll {
+  overflow-x: auto;
+  padding: 5px 2px;
+}
+.normalization-problem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: max-content;
+  min-width: 100%;
+}
+.normalization-operand {
+  position: relative;
+  text-align: center;
+}
+.operand-label {
+  display: block;
+  font-size: 13px;
+  color: #617368;
+  height: 26px;
+}
+.decimal-operand {
+  position: relative;
+  height: 74px;
+}
+.normalization-operand[data-operand="dividend"] .decimal-operand {
+  border-top: 2px solid #294f42;
+}
+.decimal-digits {
+  display: flex;
+  padding: 0 20px;
+  height: 72px;
+  align-items: center;
+  font:
+    500 26px/1 ui-monospace,
+    Menlo,
+    monospace;
+}
+.decimal-digits span {
+  width: 36px;
+  flex-shrink: 0;
+}
+.decimal-digits .added-zero {
+  color: #82988a;
+}
+.decimal-handle {
+  position: absolute;
+  top: 18px;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #966420;
+  background: #ffdf95;
+  font:
+    600 34px/26px ui-monospace,
+    monospace;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  z-index: 2;
+}
+.decimal-handle:active {
+  cursor: grabbing;
+}
+.decimal-fixed {
+  position: absolute;
+  top: 26px;
+  font:
+    500 27px/1 ui-monospace,
+    monospace;
+  width: 18px;
+}
+.decimal-destination {
+  position: absolute;
+  top: 38px;
+  width: 24px;
+  height: 24px;
+  border: 1px dashed #8fa38b;
+  border-radius: 50%;
+}
+.normalization-bracket {
+  flex: 0 0 14px;
+  margin-top: 26px;
+  height: 70px;
+  border-top: 2px solid #294f42;
+  border-right: 2px solid #294f42;
+  border-top-right-radius: 12px;
+}
+.move-one {
+  font-size: 13px;
+  margin-top: 8px;
+}
+.drag-message {
+  font-size: 13px;
+  max-width: 13em;
+  margin: 8px auto;
+  color: #9b4736;
+}
+.normalization-reset {
+  display: block;
+  margin: 18px auto 0;
+  font-size: 13px;
+}
+/* The touch target stays large while only the decimal point is painted. */
+.decimal-handle {
+  background: transparent;
+  border: 0;
+  color: #805010;
+}
+.decimal-handle::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 18px;
+  height: 18px;
+  left: 13px;
+  top: 23px;
+  background: #ffdf95;
+  border: 1px solid #966420;
+  border-radius: 50%;
+}
+.normalization-operand {
+  flex-shrink: 0;
+}
+.decimal-digits {
+  padding-inline: 12px;
+}
+.move-one {
+  width: 100%;
+  padding-inline: 0;
+  font-size: 12px;
+}
+.drag-message {
+  max-width: 100%;
+}

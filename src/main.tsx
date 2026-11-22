@@ -14,6 +14,11 @@ import {
   type Entry,
   type Session,
 } from "./session";
+import {
+  applyDecimalMove,
+  normalizationSteps,
+  type DecimalMove,
+} from "./normalization";
 import { Board } from "./Board";
 import "./style.css";
 const initial = load();
@@ -127,6 +132,13 @@ function App() {
     s = data.active,
     e = s?.items[s.index],
     w = useMemo(() => (e ? worksheet(e.p) : null), [e?.p]);
+  const groups = w ? normalizationSteps(w) : null;
+  const normalizing = !!(
+    w?.normalization &&
+    e &&
+    groups &&
+    e.at < groups.count
+  );
   const resetState = useRef(false);
   useEffect(() => {
     const change = () => {
@@ -186,6 +198,15 @@ function App() {
     updateEntry({ at });
     setHint(0);
     setFeedback("");
+  }
+  function normalize(move: DecimalMove) {
+    if (!e || !w) return;
+    const patch = applyDecimalMove(w, e, move);
+    if (patch) {
+      updateEntry(patch);
+      setFeedback("");
+      setHint(0);
+    }
   }
   function input(val: string) {
     if (
@@ -260,6 +281,7 @@ function App() {
   useEffect(() => {
     function key(ev: KeyboardEvent) {
       if (
+        normalizing ||
         route !== "practice" ||
         !e ||
         ev.metaKey ||
@@ -444,71 +466,93 @@ function App() {
                 style={{ width: ((s.index + 1) / s.items.length) * 100 + "%" }}
               />
             </div>
-            <Board w={w} e={e} nav={c.nav} select={select} />
+            <Board
+              w={w}
+              e={e}
+              nav={c.nav}
+              select={select}
+              onNormalize={normalize}
+            />
             <div className="controls">
               <div className="guide" aria-live="polite">
-                <strong>{feedback || w.steps[e.at].guide}</strong>
+                <strong>
+                  {normalizing
+                    ? "小数点を移動すると、筆算へ進みます"
+                    : feedback || w.steps[e.at].guide}
+                </strong>
                 <small>
-                  {e.at + 1} / {w.steps.length} マス
+                  {normalizing
+                    ? e.at < groups!.divisor.length
+                      ? "1 / 2 操作"
+                      : "2 / 2 操作"
+                    : e.at + 1 + " / " + w.steps.length + " マス"}
                 </small>
               </div>
-              {hint > 0 && (
-                <p className="hint">
-                  {w.steps[e.at].hint}
-                  {hint === 2 &&
-                    "　このマスは「" + w.steps[e.at].value + "」です。"}
-                </p>
+              {!normalizing && (
+                <>
+                  {hint > 0 && (
+                    <p className="hint">
+                      {w.steps[e.at].hint}
+                      {hint === 2 &&
+                        "　このマスは「" + w.steps[e.at].value + "」です。"}
+                    </p>
+                  )}
+                  <div className="tools">
+                    <button onClick={() => select(Math.max(0, e.at - 1))}>
+                      前のマス
+                    </button>
+                    <button onClick={nextCell}>次のマス</button>
+                    <button
+                      onClick={() => {
+                        setHint(Math.min(2, hint + 1));
+                        updateEntry({
+                          hints: e.hints + (hint === 0 ? 1 : 0),
+                          revealed: e.revealed || hint >= 1,
+                        });
+                      }}
+                    >
+                      {hint === 1 ? "答えを見る" : "ヒント"}
+                    </button>
+                    <button aria-pressed={c.nav} onClick={navigation}>
+                      ナビ {c.nav ? "ON" : "OFF"}
+                    </button>
+                  </div>
+                  {w.steps[e.at].value === "." && (
+                    <button className="wide" onClick={() => input(".")}>
+                      .
+                    </button>
+                  )}
+                  <div className="pad">
+                    {[
+                      "7",
+                      "8",
+                      "9",
+                      "4",
+                      "5",
+                      "6",
+                      "1",
+                      "2",
+                      "3",
+                      "消す",
+                      "0",
+                      "確認",
+                    ].map((k) => (
+                      <button
+                        key={k}
+                        onClick={() =>
+                          k === "消す"
+                            ? erase()
+                            : k === "確認"
+                              ? check()
+                              : input(k)
+                        }
+                      >
+                        {k}
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
-              <div className="tools">
-                <button onClick={() => select(Math.max(0, e.at - 1))}>
-                  前のマス
-                </button>
-                <button onClick={nextCell}>次のマス</button>
-                <button
-                  onClick={() => {
-                    setHint(Math.min(2, hint + 1));
-                    updateEntry({
-                      hints: e.hints + (hint === 0 ? 1 : 0),
-                      revealed: e.revealed || hint >= 1,
-                    });
-                  }}
-                >
-                  {hint === 1 ? "答えを見る" : "ヒント"}
-                </button>
-                <button aria-pressed={c.nav} onClick={navigation}>
-                  ナビ {c.nav ? "ON" : "OFF"}
-                </button>
-              </div>
-              {w.steps[e.at].value === "." && (
-                <button className="wide" onClick={() => input(".")}>
-                  .
-                </button>
-              )}
-              <div className="pad">
-                {[
-                  "7",
-                  "8",
-                  "9",
-                  "4",
-                  "5",
-                  "6",
-                  "1",
-                  "2",
-                  "3",
-                  "消す",
-                  "0",
-                  "確認",
-                ].map((k) => (
-                  <button
-                    key={k}
-                    onClick={() =>
-                      k === "消す" ? erase() : k === "確認" ? check() : input(k)
-                    }
-                  >
-                    {k}
-                  </button>
-                ))}
-              </div>
               {e.checked && (
                 <button className="primary wide" onClick={advance}>
                   {s.index === s.items.length - 1 ? "結果を見る" : "次の問題へ"}{" "}

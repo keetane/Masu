@@ -1,3 +1,5 @@
+import { DivisionNormalization } from "./DivisionNormalization";
+import { normalizationSteps } from "./normalization";
 import type { CSSProperties } from "react";
 import type { Cell } from "./engine";
 import type { BoardProps } from "./Board";
@@ -14,6 +16,7 @@ export function DivisionBoard({
   nav = true,
   select,
   solved = false,
+  onNormalize,
 }: BoardProps) {
   const ref = useBoardScroll(e.at, w, select);
   const layout = divisionLayout(w, e, nav, !!select, solved);
@@ -86,6 +89,13 @@ export function DivisionBoard({
       </button>
     );
   }
+  if (
+    w.normalization &&
+    onNormalize &&
+    select &&
+    e.at < normalizationSteps(w).count
+  )
+    return <DivisionNormalization w={w} e={e} onNormalize={onNormalize} />;
   const top = layout.y(w.bracket!.row),
     left = layout.x(0);
   return (
