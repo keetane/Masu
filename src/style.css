@@ -335,60 +335,13 @@ footer a {
   overflow: auto;
   padding: 14px 8px;
   background-color: #fdfdf5;
-  background-image:
-    linear-gradient(#c7d3be60 1px, transparent 1px),
-    linear-gradient(90deg, #c7d3be60 1px, transparent 1px);
-  background-size: 22px 22px;
+  background-image: none;
   border: 1px solid var(--edge);
   border-radius: 12px;
   scroll-padding: 10px;
 }
 .board {
-  display: grid;
-  width: max-content;
   margin: auto;
-  grid-auto-rows: minmax(5px, auto);
-  align-items: center;
-}
-.tile {
-  text-align: center;
-  align-self: center;
-  position: relative;
-  font:
-    600 24px/1.5 ui-monospace,
-    Menlo,
-    monospace;
-  font-variant-numeric: tabular-nums;
-}
-.tile.writable {
-  font:
-    600 24px/1 ui-monospace,
-    Menlo,
-    monospace;
-  min-height: var(--cell);
-  padding: 0;
-  background: #fffef7e8;
-  border: 1px dashed #b4c0a9;
-  border-radius: 5px;
-  display: grid;
-  place-items: center;
-}
-.tile.active {
-  background: #ffdf95;
-  border: 3px solid #966420;
-}
-.tile.upcoming {
-  border: 2px dotted #8fa38b;
-}
-.tile.related {
-  background: #dce8cf;
-}
-.tile.wrong {
-  outline: 2px dashed #b64731;
-  outline-offset: -4px;
-}
-.tile.point {
-  font-size: 17px;
 }
 .slashed:after {
   content: "";
@@ -400,13 +353,7 @@ footer a {
   top: 50%;
   transform: rotate(-30deg);
 }
-.rule {
-  align-self: start;
-  height: 2px;
-  background: #294f42;
-  z-index: 1;
-  pointer-events: none;
-}
+
 .controls {
   max-width: 480px;
   margin: 12px auto;
@@ -843,4 +790,13 @@ button.division-target:disabled {
   height: 100%;
   overflow: visible;
   pointer-events: none;
+}
+.division-target.slashed {
+  position: relative;
+}
+.division-target.note.slashed {
+  position: absolute;
+}
+.division-notes {
+  overflow: visible;
 }

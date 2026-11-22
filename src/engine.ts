@@ -120,6 +120,12 @@ export function worksheet(
           hint,
           related,
         );
+      if (previous && p + 1 < width)
+        previous.annotation = {
+          row: refs[0][0].row,
+          col: -p - 1,
+          kind: "carry",
+        };
       write(row, -p, n % 10, place(p) + "の位の答え", hint, related);
     }
     return String(total);
@@ -157,12 +163,11 @@ export function worksheet(
             "左の位から10を借りよう",
             origin ? [origin] : [],
           );
-          if (anchorRow !== undefined)
-            loan.annotation = {
-              row: anchorRow,
-              col: end - k + 1,
-              kind: "loan",
-            };
+          loan.annotation = {
+            row: anchorRow ?? source[0].row,
+            col: end - k + 1,
+            kind: "loan",
+          };
           if (origin) origin.slash = loan.step;
           current[k] = write(
             reducedRow,
@@ -172,12 +177,11 @@ export function worksheet(
             "貸した位を1減らそう",
             [loan],
           );
-          if (anchorRow !== undefined)
-            current[k].annotation = {
-              row: anchorRow,
-              col: end - k,
-              kind: "reduced",
-            };
+          current[k].annotation = {
+            row: anchorRow ?? source[0].row,
+            col: end - k,
+            kind: "reduced",
+          };
           current[k - 1] = loan;
         }
       }
@@ -265,10 +269,14 @@ export function worksheet(
       rows: Cell[][] = [];
     factors.forEach((m, p) => {
       rows.push(
-        product(a, m, -p, 4 + 2 * p, [
-          ...refs[0],
-          refs[1][refs[1].length - 1 - p],
-        ]),
+        product(
+          a,
+          m,
+          -p,
+          4 + 2 * p,
+          [...refs[0], refs[1][refs[1].length - 1 - p]],
+          true,
+        ),
       );
       parts.push(a * m * 10 ** p);
     });

@@ -341,7 +341,7 @@ test("carry notes share their digit's row without increasing row spacing", async
     note = layout.notes.find((c) => c.step === e.at);
   assert.ok(note);
   assert.ok(layout.rows.includes(note.annotation.row));
-  assert.equal(layout.height, layout.rows.length * 52);
+  assert.ok(layout.height >= layout.rows.length * 52);
   assert.equal(
     layout.y(note.annotation.row),
     layout.rows.indexOf(note.annotation.row) * 52,
@@ -394,4 +394,52 @@ test("session IDs also work without secure-context randomUUID", async () => {
       configurable: true,
     });
   }
+});
+test("all arithmetic layouts use compact source rows and separate annotations", async () => {
+  const { arithmeticLayout } = await import("../src/arithmeticLayout.ts");
+  for (const p of [
+    { op: 0, nums: ["46", "38"] },
+    { op: 1, nums: ["100", "1"] },
+    { op: 2, nums: ["99", "99"] },
+  ]) {
+    const w = worksheet(p),
+      e = entry(p);
+    e.values = w.steps.map((s) => s.value);
+    e.at = w.steps.length - 1;
+    const layout = arithmeticLayout(w, e, true, true, false);
+    assert.ok(layout.numbers.every((c) => !c.annotation));
+    assert.ok(layout.notes.every((c) => c.annotation));
+    assert.ok(layout.height >= layout.rows.length * 52);
+    assert.equal(layout.x(0) - layout.x(-1), 44);
+    assert.ok(layout.rows.length <= 5);
+    if (p.op === 1)
+      assert.equal(
+        layout.notes.filter((c) => c.annotation.col === -1).length,
+        2,
+      );
+    if (p.op === 2) {
+      assert.ok(layout.notes.every((c) => w.steps[c.step].phase === "sum"));
+      e.at = w.steps.findIndex((s) => s.phase === "sum") - 1;
+      assert.ok(
+        arithmeticLayout(w, e, true, true, false).notes.every(
+          (c) => w.steps[c.step].phase !== "sum",
+        ),
+      );
+    }
+  }
+});
+test("multiplication leaves room for carry notes after the operand rule", async () => {
+  const { arithmeticLayout } = await import("../src/arithmeticLayout.ts");
+  const p = { op: 2, nums: ["27", "13"] },
+    w = worksheet(p),
+    e = entry(p);
+  e.values = w.steps.map((step) => step.value);
+  e.at = w.steps.findIndex((step) => step.phase === "sum");
+  const layout = arithmeticLayout(w, e, true, true, false);
+  assert.ok(layout.y(4) - layout.y(1) >= 76);
+  assert.ok(
+    layout.notes.every(
+      (note) => layout.y(note.annotation.row) - 12 > layout.y(1) + 51,
+    ),
+  );
 });

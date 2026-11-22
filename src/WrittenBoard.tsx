@@ -1,3 +1,4 @@
+import { arithmeticLayout } from "./arithmeticLayout";
 import { DivisionMark } from "./DivisionMark";
 import { DivisionNormalization } from "./DivisionNormalization";
 import { normalizationSteps } from "./normalization";
@@ -11,7 +12,7 @@ import {
 } from "./divisionLayout";
 import { useBoardScroll } from "./useBoardScroll";
 
-export function DivisionBoard({
+export function WrittenBoard({
   w,
   e,
   nav = true,
@@ -20,7 +21,9 @@ export function DivisionBoard({
   onNormalize,
 }: BoardProps) {
   const ref = useBoardScroll(e.at, w, select);
-  const layout = divisionLayout(w, e, nav, !!select, solved);
+  const layout = w.bracket
+    ? divisionLayout(w, e, nav, !!select, solved)
+    : arithmeticLayout(w, e, nav, !!select, solved);
   const first = e.values.indexOf("");
   function renderCell(cell: Cell, layer: "number" | "point" | "note") {
     const step = cell.step,
@@ -32,7 +35,10 @@ export function DivisionBoard({
             : e.values[step];
     const active = !!select && step === e.at;
     const bad =
-      step !== undefined && !solved && !!value && value !== w.steps[step].value;
+      step !== undefined &&
+      !solved &&
+      (e.checked || (!!w.bracket && !!value)) &&
+      value !== w.steps[step].value;
     const related = !!select && w.steps[e.at].related.includes(cell);
     const classes = [
       "division-target",
@@ -41,11 +47,14 @@ export function DivisionBoard({
       active ? "active" : "",
       related ? "related" : "",
       bad ? "wrong" : "",
+      cell.slash !== undefined && (solved || !!e.values[cell.slash])
+        ? "slashed"
+        : "",
     ].join(" ");
     let style: CSSProperties;
     if (layer === "number") {
       style = {
-        gridRow: layout.rows.indexOf(cell.row) + 1,
+        gridRow: layout.gridRow(cell.row),
         gridColumn: cell.col - layout.min + 1 + " / span " + (cell.span ?? 1),
       };
     } else if (layer === "point") {
@@ -55,8 +64,15 @@ export function DivisionBoard({
       };
     } else {
       const anchor = cell.annotation!;
+      const peers = layout.notes.filter(
+        (note) =>
+          note.annotation!.row === anchor.row &&
+          note.annotation!.col === anchor.col,
+      );
+      const slot = peers.indexOf(cell);
       style = {
-        left: layout.x(anchor.col) + 10,
+        left: layout.x(anchor.col) + (peers.length > 1 ? slot * 22 : 10),
+        width: peers.length > 1 ? 22 : 24,
         top: layout.y(anchor.row) - 12,
       };
     }
@@ -97,7 +113,7 @@ export function DivisionBoard({
     e.at < normalizationSteps(w).count
   )
     return <DivisionNormalization w={w} e={e} onNormalize={onNormalize} />;
-  const top = layout.y(w.bracket!.row),
+  const top = w.bracket ? layout.y(w.bracket.row) : 0,
     left = layout.x(0);
   return (
     <div className="scrollboard division-paper" ref={ref}>
@@ -121,8 +137,9 @@ export function DivisionBoard({
               ", " +
               divisionDigitWidth +
               "px)",
-            gridTemplateRows:
-              "repeat(" + layout.rows.length + ", " + divisionRowHeight + "px)",
+            gridTemplateRows: layout.tracks
+              .map((size) => size + "px")
+              .join(" "),
           }}
         >
           {layout.numbers.map((cell) => renderCell(cell, "number"))}
@@ -139,13 +156,15 @@ export function DivisionBoard({
           height={layout.height}
           aria-hidden="true"
         >
-          <DivisionMark
-            left={left}
-            top={top + 2}
-            right={layout.x(layout.max) + divisionDigitWidth}
-          />
+          {w.bracket && (
+            <DivisionMark
+              left={left}
+              top={top + 2}
+              right={layout.x(layout.max) + divisionDigitWidth}
+            />
+          )}
           {layout.lines
-            .filter((line) => line.row !== w.bracket!.row)
+            .filter((line) => !w.bracket || line.row !== w.bracket.row)
             .map((line, i) => {
               const y = layout.y(line.row - 1) + divisionRowHeight - 1;
               return (

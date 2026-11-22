@@ -59,6 +59,8 @@ export function divisionLayout(
     y,
     width: (max - min + 1) * divisionDigitWidth + (lastPoint ? 12 : 0),
     height: rows.length * divisionRowHeight,
+    tracks: rows.map(() => divisionRowHeight),
+    gridRow: (row: number) => rows.indexOf(row) + 1,
     lines: w.lines.filter((l) =>
       rows.includes(l.row === w.bracket!.row ? l.row : l.row - 1),
     ),
