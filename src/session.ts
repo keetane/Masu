@@ -127,7 +127,7 @@ export function generate(c: Config, seed: number): Problem {
   );
 }
 export type Entry = {
-  engineRevision?: 2 | 3;
+  engineRevision?: 2 | 3 | 4;
   p: Problem;
   values: string[];
   at: number;
@@ -150,7 +150,7 @@ export const fresh = (): Data => ({
   history: [],
 });
 export const entry = (p: Problem): Entry => ({
-  engineRevision: 3,
+  engineRevision: 4,
   p,
   values: worksheet(p).steps.map(() => ""),
   at: 0,
@@ -213,20 +213,37 @@ export function validSession(s: Session): boolean {
   });
 }
 
-// Match previous worksheet sequences before validating, preserving answers
-// when multiplication gains sum steps or division drops borrow notes.
+// Convert previous worksheet sequences before validating saved answers.
 export function upgradeSession(session: Session): Session {
   if (!session || !Array.isArray(session.items)) return session;
   return {
     ...session,
     items: session.items.map((item) => {
-      if (!item || item.engineRevision === 3) return item;
-      if (item.p?.op === 3 && Array.isArray(item.values)) {
-        try {
+      if (!item || item.engineRevision === 4) return item;
+      try {
+        const current = worksheet(item.p);
+        if (!Array.isArray(item.values)) return item;
+        if (item.values.length === current.steps.length)
+          return { ...item, engineRevision: 4 as const };
+        const singleDigit =
+          item.p.op === 2 &&
+          String(Number(item.p.nums[1].replace(".", ""))).length === 1;
+        if (singleDigit) {
+          const previous = worksheet(item.p, { singleDigitSum: true });
+          if (item.values.length !== previous.steps.length) return item;
+          const indices = previous.steps.flatMap((step, index) =>
+            step.phase === "sum" ? [] : [index],
+          );
+          const at = indices.findIndex((index) => index >= item.at);
+          return {
+            ...item,
+            engineRevision: 4 as const,
+            values: indices.map((index) => item.values[index]),
+            at: at < 0 ? current.steps.length - 1 : at,
+          };
+        }
+        if (item.p.op === 3) {
           const previous = worksheet(item.p, { divisionBorrowNotes: true });
-          const current = worksheet(item.p);
-          if (item.values.length === current.steps.length)
-            return { ...item, engineRevision: 3 as const };
           if (item.values.length !== previous.steps.length) return item;
           const key = (step: (typeof current.steps)[number]) =>
             [step.guide, step.cell.row, step.cell.col, !!step.cell.point].join(
@@ -239,52 +256,12 @@ export function upgradeSession(session: Session): Session {
           const at = indices.findIndex((index) => index >= item.at);
           return {
             ...item,
-            engineRevision: 3 as const,
+            engineRevision: 4 as const,
             values: indices.map((index) => item.values[index]),
             at: at < 0 ? current.steps.length - 1 : at,
           };
-        } catch {
-          return item;
         }
-      }
-      if (item.engineRevision === 2)
-        return { ...item, engineRevision: 3 as const };
-      try {
-        const sheet = worksheet(item.p);
-        const singleDigit =
-          item.p.op === 2 &&
-          String(Number(item.p.nums[1].replace(".", ""))).length === 1;
-        const sumSteps = sheet.steps.filter((step) => step.phase === "sum");
-        if (
-          !singleDigit ||
-          !Array.isArray(item.values) ||
-          item.values.length !== sheet.steps.length - sumSteps.length
-        )
-          return item;
-        let oldIndex = 0;
-        const oldToNew: number[] = [];
-        const values = sheet.steps.map((step, index) => {
-          if (step.phase === "sum") {
-            if (!item.checked) return "";
-            const partial = sheet.steps.findIndex(
-              (other) =>
-                other.phase !== "sum" &&
-                !other.cell.point &&
-                other.cell.col === step.cell.col &&
-                other.cell.row === 4,
-            );
-            const prior = oldToNew.indexOf(partial);
-            return prior >= 0 ? item.values[prior] : "";
-          }
-          oldToNew[oldIndex] = index;
-          return item.values[oldIndex++];
-        });
-        return {
-          ...item,
-          engineRevision: 3 as const,
-          values,
-          at: oldToNew[item.at] ?? 0,
-        };
+        return item;
       } catch {
         return item;
       }

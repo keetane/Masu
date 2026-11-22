@@ -14,10 +14,13 @@ try {
     { op: 0, nums: ["99", "99", "99"] },
     { op: 1, nums: ["100", "1"] },
     { op: 1, nums: ["302", "178"] },
+    { op: 2, nums: ["66", "8"] },
+    { op: 2, nums: ["0", "7"] },
     { op: 2, nums: ["27", "13"] },
     { op: 2, nums: ["99", "99"] },
     { op: 2, nums: ["105", "20"] },
     { op: 2, nums: ["12.3", "0.4"] },
+    { op: 2, nums: ["0.1", "0.1"] },
     { op: 2, nums: ["9999", "9999"] },
   ]) {
     const w = worksheet(p),
@@ -102,6 +105,24 @@ try {
     }
     await page.getByRole("button", { name: "確認", exact: true }).click();
     await page.getByText("正解です！", { exact: true }).waitFor();
+    if (p.op === 2 && Number(p.nums[1].replace(".", "")) < 10) {
+      assert.equal(
+        await page
+          .locator('.division-target[aria-label="部分積を足す"]')
+          .count(),
+        0,
+      );
+      assert.equal(await page.locator(".division-rules path").count(), 1);
+      assert.equal(
+        await page.locator(".division-digits").evaluate(
+          (el) =>
+            getComputedStyle(el)
+              .gridTemplateRows.split(" ")
+              .filter((size) => size === "52px").length,
+        ),
+        3,
+      );
+    }
     if (p.op === 1) assert.ok(await page.locator(".slashed").count());
     await page.locator(".scrollboard").evaluate((el) => (el.scrollTop = 0));
     await page.locator(".scrollboard").screenshot({
@@ -118,6 +139,32 @@ try {
     await page.setViewportSize({ width: 390, height: 844 });
     console.log("PASS paper arithmetic", p.nums.join("/"), w.result);
   }
+  // Resume a real saved worksheet paused at the obsolete final sum.
+  const p = { op: 2, nums: ["66", "8"] },
+    old = worksheet(p, { singleDigitSum: true }),
+    data = fresh(),
+    sumAt = old.steps.findIndex((step) => step.phase === "sum");
+  data.active = start([p]);
+  data.active.items[0] = {
+    ...data.active.items[0],
+    engineRevision: 3,
+    at: sumAt,
+    values: old.steps.map((step, index) => (index < sumAt ? step.value : "")),
+  };
+  await page.evaluate(
+    ({ key, data }) => localStorage.setItem(key, JSON.stringify(data)),
+    { key: storageKey, data },
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "確認", exact: true }).click();
+  await page.getByText("正解です！", { exact: true }).waitFor();
+  const resumed = await page.evaluate(
+    (key) => JSON.parse(localStorage.getItem(key)).active.items[0],
+    storageKey,
+  );
+  assert.equal(resumed.values.length, 4);
+  assert.deepEqual(resumed.values, ["4", "8", "5", "2"]);
+  console.log("PASS saved single-digit multiplication resumes without sum");
   assert.deepEqual(errors, []);
 } finally {
   await browser.close();

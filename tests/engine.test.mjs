@@ -129,9 +129,8 @@ test("history is limited to 100 review questions", async () => {
 test("multiplication finishes all partial products before summing each place", () => {
   for (const nums of [
     ["27", "13"],
-    ["24", "3"],
+    ["99", "99"],
     ["105", "20"],
-    ["12.3", "0.4"],
   ]) {
     const w = worksheet({ op: 2, nums });
     const first = w.steps.findIndex((s) => s.phase === "sum");
@@ -178,44 +177,71 @@ test("division omits borrow notes and bring-down shares the remainder row", () =
   assert.ok(products[0].cell.row < firstDifference.cell.row);
   assert.ok(w.steps.indexOf(firstDifference) < w.steps.indexOf(down));
 });
-test("old single-digit multiplication answers survive the inserted sum phase", async () => {
+test("single-digit multiplication drops the repeated sum and migrates saved answers", async () => {
   const { upgradeSession } = await import("../src/session.ts");
   for (const nums of [
+    ["66", "8"],
     ["24", "3"],
+    ["0", "7"],
+    ["12.3", "0.4"],
     ["0.1", "0.1"],
   ]) {
     const p = { op: 2, nums },
       w = worksheet(p),
-      legacy = w.steps.filter((s) => s.phase !== "sum");
-    const old = {
-      id: "old",
+      old = worksheet(p, { singleDigitSum: true });
+    assert.ok(!w.steps.some((step) => step.phase === "sum"));
+    assert.ok(!w.cells.some((cell) => cell.text === "＋"));
+    assert.equal(w.lines.length, 1);
+    const previous = {
+      id: "legacy",
       index: 0,
       items: [
         {
+          engineRevision: 3,
           p,
-          values: legacy.map((s) => s.value),
-          at: legacy.length - 1,
-          checked: true,
-          first: true,
-          hints: 0,
+          values: old.steps.map((step) => step.value),
+          at: old.steps.findIndex((step) => step.phase === "sum"),
+          first: false,
+          checked: false,
+          hints: 1,
           revealed: false,
         },
       ],
     };
-    const migrated = upgradeSession(old);
+    const migrated = upgradeSession(previous);
     assert.ok(validSession(migrated));
-    assert.ok(
-      migrated.items[0].values.every((value, i) => value === w.steps[i].value),
+    assert.deepEqual(
+      migrated.items[0].values,
+      w.steps.map((step) => step.value),
     );
+    assert.equal(migrated.items[0].first, false);
+    assert.equal(migrated.items[0].hints, 1);
     assert.deepEqual(upgradeSession(migrated), migrated);
-    old.items[0].checked = false;
-    const pending = upgradeSession(old);
-    assert.ok(
-      w.steps.filter(
-        (step, i) => step.phase === "sum" && pending.items[0].values[i] === "",
-      ).length,
-    );
+    for (let at = 0; at < old.steps.length; at++) {
+      const pending = structuredClone(previous);
+      pending.items[0].at = at;
+      pending.items[0].values = old.steps.map((step, index) =>
+        index < at ? step.value : "",
+      );
+      const resumed = upgradeSession(pending);
+      const kept = old.steps
+        .map((step, index) => ({ step, index }))
+        .filter(({ step }) => step.phase !== "sum");
+      const next = kept.findIndex(({ index }) => index >= at);
+      assert.ok(validSession(resumed));
+      assert.equal(resumed.items[0].at, next < 0 ? w.steps.length - 1 : next);
+      assert.deepEqual(
+        resumed.items[0].values,
+        kept.map(({ index }) => pending.items[0].values[index]),
+      );
+    }
   }
+  const example = worksheet({ op: 2, nums: ["66", "8"] });
+  assert.deepEqual(
+    example.steps.map((step) => step.value),
+    ["4", "8", "5", "2"],
+  );
+  assert.equal(example.result, "528");
 });
 test("220 divided by 6 follows 22-18, bring down 0, 40-36, remainder 4", () => {
   const w = worksheet({ op: 3, nums: ["220", "6"] });

@@ -33,7 +33,7 @@ const place = (p: number) =>
   String(10 ** p);
 export function worksheet(
   problem: Problem,
-  options: { divisionBorrowNotes?: boolean } = {},
+  options: { divisionBorrowNotes?: boolean; singleDigitSum?: boolean } = {},
 ) {
   const { op, nums } = problem;
   if (
@@ -280,16 +280,19 @@ export function worksheet(
       );
       parts.push(a * m * 10 ** p);
     });
-    const last = 4 + 2 * (factors.length - 1),
-      final = last + 3;
-    cell(last, -width, "＋", "部分積を足す");
-    lines.push({ row: last + 1, left: -width, right: 0 });
-    const sumStart = steps.length;
-    sum(parts, rows, final, final - 1);
-    for (const step of steps.slice(sumStart)) {
-      step.phase = "sum";
-      step.guide = "最後の足し算・" + step.guide;
-      step.cell.label = step.guide;
+    const last = 4 + 2 * (factors.length - 1);
+    const needsSum = factors.length > 1 || options.singleDigitSum === true;
+    const final = needsSum ? last + 3 : last;
+    if (needsSum) {
+      cell(last, -width, "＋", "部分積を足す");
+      lines.push({ row: last + 1, left: -width, right: 0 });
+      const sumStart = steps.length;
+      sum(parts, rows, final, final - 1);
+      for (const step of steps.slice(sumStart)) {
+        step.phase = "sum";
+        step.guide = "最後の足し算・" + step.guide;
+        step.cell.label = step.guide;
+      }
     }
     const decimals = scale(nums[0]) + scale(nums[1]);
     const raw = String(a * b).padStart(decimals + 1, "0");
