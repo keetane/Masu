@@ -53,12 +53,21 @@ summary:focus-visible {
   outline-offset: 2px;
 }
 header {
-  height: 76px;
   border-bottom: 1px solid var(--edge);
+}
+.header-inner {
+  width: min(880px, 90%);
+  margin: auto;
+  min-height: 76px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline: max(5%, calc((100vw - 1000px) / 2));
+  gap: 20px;
+}
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .brand {
   display: flex;
@@ -418,10 +427,6 @@ section h3 {
   font-size: 16px;
 }
 @media (max-width: 650px) {
-  header {
-    height: 58px;
-    padding: 0 5%;
-  }
   .brand {
     font-size: 26px;
   }
@@ -833,12 +838,15 @@ button.division-target:disabled {
   text-align: left;
 }
 @media (max-width: 650px) {
-  header {
-    height: auto;
+  .header-inner {
     display: grid;
     grid-template-columns: 1fr auto;
-    row-gap: 2px;
+    gap: 6px 12px;
     padding-block: 6px;
+    min-height: 0;
+  }
+  .header-tools {
+    display: contents;
   }
   header .brand {
     grid-column: 1;
@@ -851,13 +859,28 @@ button.division-target:disabled {
   header nav {
     grid-column: 1 / -1;
     grid-row: 2;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 3px;
+    border: 1px solid #e0e4d8;
+    border-radius: 12px;
+    background: #eef1e7;
   }
   header nav a {
-    padding-block: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 6px;
+    border-radius: 8px;
+  }
+  header nav a[aria-current] {
+    background: #fffef8;
+    box-shadow: 0 1px 3px #203b3018;
   }
   .practice .scrollboard {
-    max-height: calc(100dvh - 420px);
+    max-height: calc(100dvh - 450px);
   }
   html[lang="en"] .choices button {
     font-size: 13px;

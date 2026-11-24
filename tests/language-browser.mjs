@@ -86,8 +86,56 @@ try {
         JSON.stringify({ width, box }),
       );
     }
+    const layout = await page.locator("header").evaluate((header) => {
+      const rect = (selector) => {
+        const box = header.querySelector(selector).getBoundingClientRect();
+        return {
+          x: box.x,
+          y: box.y,
+          right: box.right,
+          width: box.width,
+          height: box.height,
+        };
+      };
+      return {
+        inner: rect(".header-inner"),
+        brand: rect(".brand"),
+        nav: rect("nav"),
+        flags: rect(".language-switch"),
+        links: [...header.querySelectorAll("nav a")].map(
+          (node) => node.getBoundingClientRect().width,
+        ),
+      };
+    });
+    if (width <= 650) {
+      assert.ok(
+        Math.abs(
+          layout.brand.y +
+            layout.brand.height / 2 -
+            layout.flags.y -
+            layout.flags.height / 2,
+        ) < 1,
+      );
+      assert.ok(Math.abs(layout.nav.x - layout.inner.x) < 1);
+      assert.ok(Math.abs(layout.nav.width - layout.inner.width) < 1);
+      assert.ok(Math.max(...layout.links) - Math.min(...layout.links) < 1);
+    } else {
+      assert.ok(
+        Math.abs(
+          layout.nav.y +
+            layout.nav.height / 2 -
+            layout.flags.y -
+            layout.flags.height / 2,
+        ) < 1,
+      );
+      assert.ok(layout.nav.right < layout.flags.x);
+    }
+    if (width === 1024)
+      await page.screenshot({ path: "docs/screenshots/toolbar-desktop.png" });
   }
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await page.getByRole("heading", { name: "One digit at a time." }).waitFor();
   await page.screenshot({ path: "docs/screenshots/english-home.png" });
   await page.getByText("More options", { exact: true }).tap();
   await englishOnly();

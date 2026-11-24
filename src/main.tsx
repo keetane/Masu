@@ -321,26 +321,30 @@ function App() {
   return (
     <div className={c.motion ? "" : "reduced"}>
       <header>
-        <a className="brand" href="#/home">
-          <img src="./masu.svg" alt="" />
-          Masu
-        </a>
-        <nav>
-          {[
-            ["home", "ホーム"],
-            ["history", "履歴"],
-            ["settings", "設定"],
-          ].map(([r, caption]) => (
-            <a
-              key={r}
-              aria-current={page === r ? "page" : undefined}
-              href={"#/" + r}
-            >
-              {t(caption)}
-            </a>
-          ))}
-        </nav>
-        <LanguageSwitcher />
+        <div className="header-inner">
+          <a className="brand" href="#/home">
+            <img src="./masu.svg" alt="" />
+            Masu
+          </a>
+          <div className="header-tools">
+            <nav>
+              {[
+                ["home", "ホーム"],
+                ["history", "履歴"],
+                ["settings", "設定"],
+              ].map(([r, caption]) => (
+                <a
+                  key={r}
+                  aria-current={page === r ? "page" : undefined}
+                  href={"#/" + r}
+                >
+                  {t(caption)}
+                </a>
+              ))}
+            </nav>
+            <LanguageSwitcher />
+          </div>
+        </div>
       </header>
       <main className={practice ? "practice" : ""}>
         {notice && <p role="status">{t(notice)}</p>}

@@ -69,7 +69,12 @@ export function LanguageSwitcher() {
           aria-pressed={language === code}
           onClick={() => setLanguage(code)}
         >
-          <img src={"./flag-" + code + ".svg"} alt="" width="30" height="20" />
+          <img
+            src={"./flag-" + code + ".svg" + (code === "en" ? "?v=us" : "")}
+            alt=""
+            width="30"
+            height="20"
+          />
         </button>
       ))}
     </div>
