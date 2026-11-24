@@ -20,6 +20,7 @@ import {
   type DecimalMove,
 } from "./normalization";
 import { Board } from "./Board";
+import { LanguageProvider, LanguageSwitcher, useI18n } from "./Language";
 import "./style.css";
 const initial = load();
 const levels = ["やさしい", "ふつう", "むずかしい"];
@@ -39,9 +40,10 @@ function Choice({
   value: number;
   onChange: (i: number) => void;
 }) {
+  const { t } = useI18n();
   return (
     <fieldset>
-      <legend>{title}</legend>
+      <legend>{t(title)}</legend>
       <div className="choices">
         {items.map((item, i) => (
           <button
@@ -49,7 +51,7 @@ function Choice({
             aria-pressed={i === value}
             onClick={() => onChange(i)}
           >
-            {item}
+            {t(item)}
           </button>
         ))}
       </div>
@@ -69,9 +71,10 @@ function NumberSelect({
   min?: number;
   onChange: (v: number) => void;
 }) {
+  const { t } = useI18n();
   return (
     <label>
-      {label}
+      {t(label)}
       <select value={value} onChange={(e) => onChange(+e.target.value)}>
         {Array.from({ length: max - min + 1 }, (_, i) => (
           <option key={i} value={i + min}>
@@ -83,6 +86,7 @@ function NumberSelect({
   );
 }
 function Sample({ op }: { op: Op }) {
+  const { t } = useI18n();
   const samples = [
     ["46", "38", "84"],
     ["73", "28", "45"],
@@ -93,7 +97,7 @@ function Sample({ op }: { op: Op }) {
   return (
     <div
       className="sample"
-      aria-label={"筆算の例 " + a + signs[op] + b + " = " + r}
+      aria-label={t("筆算の例 " + a + signs[op] + b + " = " + r)}
     >
       <div className="sample-paper">
         {op === 3 ? (
@@ -121,6 +125,7 @@ function Sample({ op }: { op: Op }) {
   );
 }
 function App() {
+  const { t } = useI18n();
   const [data, setData] = useState<Data>(initial.data),
     [notice, setNotice] = useState(initial.warning),
     [route, setRoute] = useState(location.hash.slice(2) || "home");
@@ -325,33 +330,35 @@ function App() {
             ["home", "ホーム"],
             ["history", "履歴"],
             ["settings", "設定"],
-          ].map(([r, t]) => (
+          ].map(([r, caption]) => (
             <a
               key={r}
               aria-current={page === r ? "page" : undefined}
               href={"#/" + r}
             >
-              {t}
+              {t(caption)}
             </a>
           ))}
         </nav>
+        <LanguageSwitcher />
       </header>
       <main className={practice ? "practice" : ""}>
-        {notice && <p role="status">{notice}</p>}
+        {notice && <p role="status">{t(notice)}</p>}
         {page === "home" && (
           <>
             <div className="intro">
               <div>
-                <p className="eyebrow">筆算の練習帳</p>
+                <p className="eyebrow">{t("筆算の練習帳")}</p>
                 <h1>
-                  今日の筆算<span>。</span>
+                  {t("今日の筆算")}
+                  <span>{t("。")}</span>
                 </h1>
-                <p>マスをたどって、一桁ずつ解いてみよう。</p>
+                <p>{t("マスをたどって、一桁ずつ解いてみよう。")}</p>
               </div>
               <Sample op={c.op} />
             </div>
             <section className="setup">
-              <h2>練習する計算</h2>
+              <h2>{t("練習する計算")}</h2>
               <div className="operations">
                 {names.map((name, i) => (
                   <button
@@ -364,7 +371,7 @@ function App() {
                     }}
                   >
                     <b>{signs[i]}</b>
-                    {name}
+                    {t(name)}
                   </button>
                 ))}
               </div>
@@ -383,7 +390,7 @@ function App() {
                 />
               </div>
               <details>
-                <summary>くわしく設定</summary>
+                <summary>{t("くわしく設定")}</summary>
                 <div className="fields">
                   {(["a", "b"] as const).map((k, i) => (
                     <React.Fragment key={k}>
@@ -416,33 +423,41 @@ function App() {
                   )}
                   {c.op === 3 && !c.da && !c.db && (
                     <label>
-                      余り
+                      {t("余り")}
                       <select
                         value={c.rem}
                         onChange={(ev) => detail({ rem: ev.target.value })}
                       >
-                        <option value="mixed">混在</option>
-                        <option value="with">あり</option>
-                        <option value="without">なし</option>
+                        <option value="mixed">{t("混在")}</option>
+                        <option value="with">{t("あり")}</option>
+                        <option value="without">{t("なし")}</option>
                       </select>
                     </label>
                   )}
                 </div>
               </details>
-              {feedback && <p role="alert">{feedback}</p>}
+              {feedback && <p role="alert">{t(feedback)}</p>}
               {s && (
                 <button className="resume" onClick={() => goto("practice")}>
-                  前回の続きから　{s.index + 1} / {s.items.length} 問
+                  {t(
+                    "前回の続きから　" +
+                      (s.index + 1) +
+                      " / " +
+                      s.items.length +
+                      " 問",
+                  )}
                 </button>
               )}
               <button className="primary wide" onClick={startButton}>
-                練習をはじめる <span>→</span>
+                {t("練習をはじめる")} <span>→</span>
               </button>
               {confirm === "replace" && (
                 <div role="alert">
-                  途中の練習を新しい問題に替えますか？{" "}
-                  <button onClick={() => begin()}>新しく始める</button>{" "}
-                  <button onClick={() => setConfirm("")}>キャンセル</button>
+                  {t("途中の練習を新しい問題に替えますか？")}{" "}
+                  <button onClick={() => begin()}>{t("新しく始める")}</button>{" "}
+                  <button onClick={() => setConfirm("")}>
+                    {t("キャンセル")}
+                  </button>
                 </div>
               )}
             </section>
@@ -452,14 +467,10 @@ function App() {
           <>
             <div className="practice-head">
               <div>
-                <p className="eyebrow">
-                  {names[c.op === e.p.op ? c.op : e.p.op]}の練習
-                </p>
+                <p className="eyebrow">{t(names[e.p.op] + "の練習")}</p>
                 <h1>{w.expr}</h1>
               </div>
-              <span>
-                {s.index + 1} / {s.items.length} 問
-              </span>
+              <span>{t(s.index + 1 + " / " + s.items.length + " 問")}</span>
             </div>
             <div className="progress">
               <i
@@ -476,32 +487,36 @@ function App() {
             <div className="controls">
               <div className="guide" aria-live="polite">
                 <strong>
-                  {normalizing
-                    ? "小数点を移動すると、筆算へ進みます"
-                    : feedback || w.steps[e.at].guide}
+                  {t(
+                    normalizing
+                      ? "小数点を移動すると、筆算へ進みます"
+                      : feedback || w.steps[e.at].guide,
+                  )}
                 </strong>
                 <small>
-                  {normalizing
-                    ? e.at < groups!.divisor.length
-                      ? "1 / 2 操作"
-                      : "2 / 2 操作"
-                    : e.at + 1 + " / " + w.steps.length + " マス"}
+                  {t(
+                    normalizing
+                      ? e.at < groups!.divisor.length
+                        ? "1 / 2 操作"
+                        : "2 / 2 操作"
+                      : e.at + 1 + " / " + w.steps.length + " マス",
+                  )}
                 </small>
               </div>
               {!normalizing && (
                 <>
                   {hint > 0 && (
                     <p className="hint">
-                      {w.steps[e.at].hint}
+                      {t(w.steps[e.at].hint)}
                       {hint === 2 &&
-                        "　このマスは「" + w.steps[e.at].value + "」です。"}
+                        t("　このマスは「" + w.steps[e.at].value + "」です。")}
                     </p>
                   )}
                   <div className="tools">
                     <button onClick={() => select(Math.max(0, e.at - 1))}>
-                      前のマス
+                      {t("前のマス")}
                     </button>
-                    <button onClick={nextCell}>次のマス</button>
+                    <button onClick={nextCell}>{t("次のマス")}</button>
                     <button
                       onClick={() => {
                         setHint(Math.min(2, hint + 1));
@@ -511,10 +526,10 @@ function App() {
                         });
                       }}
                     >
-                      {hint === 1 ? "答えを見る" : "ヒント"}
+                      {t(hint === 1 ? "答えを見る" : "ヒント")}
                     </button>
                     <button aria-pressed={c.nav} onClick={navigation}>
-                      ナビ {c.nav ? "ON" : "OFF"}
+                      {t("ナビ " + (c.nav ? "ON" : "OFF"))}
                     </button>
                   </div>
                   {w.steps[e.at].value === "." && (
@@ -547,7 +562,7 @@ function App() {
                               : input(k)
                         }
                       >
-                        {k}
+                        {t(k)}
                       </button>
                     ))}
                   </div>
@@ -555,7 +570,11 @@ function App() {
               )}
               {e.checked && (
                 <button className="primary wide" onClick={advance}>
-                  {s.index === s.items.length - 1 ? "結果を見る" : "次の問題へ"}{" "}
+                  {t(
+                    s.index === s.items.length - 1
+                      ? "結果を見る"
+                      : "次の問題へ",
+                  )}{" "}
                   →
                 </button>
               )}
@@ -564,8 +583,8 @@ function App() {
         )}
         {page === "history" && (
           <section>
-            <p className="eyebrow">練習帳</p>
-            <h1>練習の履歴</h1>
+            <p className="eyebrow">{t("練習帳")}</p>
+            <h1>{t("練習の履歴")}</h1>
             {data.history.length ? (
               data.history.map((h) => (
                 <button
@@ -576,12 +595,12 @@ function App() {
                     goto("result/" + h.id);
                   }}
                 >
-                  {names[h.items[0].p.op]}　{h.items.length}問{" "}
-                  <b>初回正解 {score(h)}問　→</b>
+                  {t(names[h.items[0].p.op])}　{t(h.items.length + "問")}{" "}
+                  <b>{t("初回正解 " + score(h) + "問　→")}</b>
                 </button>
               ))
             ) : (
-              <p>練習を最後まで解くと、ここに結果が残ります。</p>
+              <p>{t("練習を最後まで解くと、ここに結果が残ります。")}</p>
             )}
           </section>
         )}
@@ -599,14 +618,14 @@ function App() {
             }}
           />
         )}
-        {page === "result" && feedback && <p role="status">{feedback}</p>}
+        {page === "result" && feedback && <p role="status">{t(feedback)}</p>}
         {page === "settings" && (
           <section>
-            <p className="eyebrow">練習帳</p>
-            <h1>設定</h1>
+            <p className="eyebrow">{t("練習帳")}</p>
+            <h1>{t("設定")}</h1>
             <label className="switch">
               <input type="checkbox" checked={c.nav} onChange={navigation} />
-              入力後、次のマスへ移動する
+              {t("入力後、次のマスへ移動する")}
             </label>
             <label className="switch">
               <input
@@ -614,15 +633,17 @@ function App() {
                 checked={!c.motion}
                 onChange={() => config({ motion: !c.motion })}
               />
-              画面の動きを減らす
+              {t("画面の動きを減らす")}
             </label>
             <details>
-              <summary>保存したデータ</summary>
-              <p>このブラウザの設定、途中の練習、履歴を削除できます。</p>
-              <button onClick={() => setConfirm("delete")}>データを削除</button>
+              <summary>{t("保存したデータ")}</summary>
+              <p>{t("このブラウザの設定、途中の練習、履歴を削除できます。")}</p>
+              <button onClick={() => setConfirm("delete")}>
+                {t("データを削除")}
+              </button>
               {confirm === "delete" && (
                 <p role="alert">
-                  削除すると元に戻せません。{" "}
+                  {t("削除すると元に戻せません。")}{" "}
                   <button
                     onClick={() => {
                       resetState.current = true;
@@ -631,12 +652,14 @@ function App() {
                       setFeedback("削除しました");
                     }}
                   >
-                    すべて削除する
+                    {t("すべて削除する")}
                   </button>{" "}
-                  <button onClick={() => setConfirm("")}>キャンセル</button>
+                  <button onClick={() => setConfirm("")}>
+                    {t("キャンセル")}
+                  </button>
                 </p>
               )}
-              {feedback}
+              {feedback && <p role="status">{t(feedback)}</p>}
             </details>
           </section>
         )}
@@ -650,9 +673,9 @@ function App() {
               ["privacy", "プライバシー"],
               ["terms", "利用規約"],
               ["licenses", "ライセンス"],
-            ].map(([u, t]) => (
+            ].map(([u, caption]) => (
               <a key={u} href={"./" + u + "/index.html"}>
-                {t}
+                {t(caption)}
               </a>
             ))}
           </div>
@@ -672,35 +695,41 @@ function Result({
   setInspect: (n: number) => void;
   retry: (p: Problem[]) => void;
 }) {
+  const { t } = useI18n();
   const i = Math.min(inspect, s.items.length - 1),
     e = s.items[i],
     w = worksheet(e.p),
     miss = s.items.filter((x) => !x.first);
   return (
     <section>
-      <p className="eyebrow">{names[e.p.op]}の記録</p>
-      <h1>練習の結果</h1>
+      <p className="eyebrow">{t(names[e.p.op] + "の記録")}</p>
+      <h1>{t("練習の結果")}</h1>
       <div className="summary">
-        <strong>
-          {score(s)} / {s.items.length} 問
-        </strong>
+        <strong>{t(score(s) + " / " + s.items.length + " 問")}</strong>
         <p>
-          初回正答率 {Math.round((100 * score(s)) / s.items.length)}%　ヒント{" "}
-          {s.items.reduce((n, x) => n + x.hints, 0)}回
+          {t(
+            "初回正答率 " +
+              Math.round((100 * score(s)) / s.items.length) +
+              "%　ヒント " +
+              s.items.reduce((n, x) => n + x.hints, 0) +
+              "回",
+          )}
         </p>
       </div>
       <div className="tools">
-        <button onClick={() => retry(s.items.map((x) => x.p))}>もう一度</button>
+        <button onClick={() => retry(s.items.map((x) => x.p))}>
+          {t("もう一度")}
+        </button>
         <button
           disabled={!miss.length}
           onClick={() => retry(miss.map((x) => x.p))}
         >
-          まちがいを練習
+          {t("まちがいを練習")}
         </button>
       </div>
-      <h2>答え合わせ</h2>
+      <h2>{t("答え合わせ")}</h2>
       <label>
-        問題{" "}
+        {t("問題")}{" "}
         <select value={i} onChange={(ev) => setInspect(+ev.target.value)}>
           {s.items.map((x, j) => (
             <option value={j} key={j}>
@@ -711,14 +740,18 @@ function Result({
       </label>
       <p>
         {w.expr} ＝ {w.result}
-        {w.remainder ? " 余り " + w.remainder : ""}　
-        {e.revealed ? "補助あり" : ""}
+        {w.remainder ? t(" 余り " + w.remainder) : ""}　
+        {t(e.revealed ? "補助あり" : "")}
       </p>
-      <h3>自分の筆算</h3>
+      <h3>{t("自分の筆算")}</h3>
       <Board w={w} e={e} />
-      <h3>正しい筆算</h3>
+      <h3>{t("正しい筆算")}</h3>
       <Board w={w} e={e} solved />
     </section>
   );
 }
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <LanguageProvider>
+    <App />
+  </LanguageProvider>,
+);

@@ -2,6 +2,7 @@ import { DivisionMark } from "./DivisionMark";
 import { useEffect, useRef, useState } from "react";
 import type { BoardProps } from "./Board";
 import { normalizationSteps, type DecimalMove } from "./normalization";
+import { useI18n } from "./Language";
 const digitWidth = 36;
 function Operand({
   value,
@@ -22,6 +23,7 @@ function Operand({
   moved: boolean;
   onMove: (move: DecimalMove) => void;
 }) {
+  const { t } = useI18n();
   const initial = value.includes(".") ? value.indexOf(".") : value.length;
   const target = initial + shift;
   const [draft, setDraft] = useState<number | null>(null),
@@ -65,7 +67,7 @@ function Operand({
       data-operand={kind}
       style={{ width: number.length * digitWidth + 24 }}
     >
-      <span className="operand-label">{label}</span>
+      <span className="operand-label">{t(label)}</span>
       <div
         className="decimal-operand"
         style={{ width: number.length * digitWidth + 24 }}
@@ -93,11 +95,11 @@ function Operand({
             <button
               role="slider"
               className="decimal-handle"
-              aria-label={label + "の小数点"}
+              aria-label={t(label + "の小数点")}
               aria-valuemin={initial}
               aria-valuemax={target}
               aria-valuenow={point}
-              aria-valuetext={"右へ" + shift + "桁"}
+              aria-valuetext={t("右へ" + shift + "桁")}
               style={{ left: point * digitWidth - 10 }}
               onPointerDown={(event) => {
                 if (!event.isPrimary || event.button !== 0) return;
@@ -164,18 +166,19 @@ function Operand({
       </div>
       {active && (
         <button className="move-one" onClick={advance}>
-          右へ1桁動かす
+          {t("右へ1桁動かす")}
         </button>
       )}
       {message && (
         <p className="drag-message" role="status">
-          {message}
+          {t(message)}
         </p>
       )}
     </div>
   );
 }
 export function DivisionNormalization({ w, e, onNormalize }: BoardProps) {
+  const { t } = useI18n();
   const groups = normalizationSteps(w),
     divisorTurn = e.at < groups.divisor.length;
   const divisorDigits = (
@@ -193,10 +196,14 @@ export function DivisionNormalization({ w, e, onNormalize }: BoardProps) {
   const dividendWidth = dividendDigits * digitWidth + 24;
 
   return (
-    <section className="normalization-card" aria-label="小数点の移動">
+    <section className="normalization-card" aria-label={t("小数点の移動")}>
       <p className="drag-instruction" aria-live="polite">
-        {divisorTurn ? "まず、割る数の小数点を" : "次に、割られる数の小数点を"}
-        右へ{w.normalization!.shift}桁ドラッグ
+        {t(
+          (divisorTurn ? "まず、割る数" : "次に、割られる数") +
+            "の小数点を右へ" +
+            w.normalization!.shift +
+            "桁ドラッグ",
+        )}
       </p>
       <div className="normalization-scroll">
         <div className="normalization-problem">
@@ -237,7 +244,7 @@ export function DivisionNormalization({ w, e, onNormalize }: BoardProps) {
           className="normalization-reset"
           onClick={() => onNormalize!("reset")}
         >
-          小数点の移動をやり直す
+          {t("小数点の移動をやり直す")}
         </button>
       )}
     </section>

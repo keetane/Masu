@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { englishPages } from "./english-pages.mjs";
 import { reviewedLicenses, sha256 } from "./license-policy.mjs";
 const esc = (s) =>
   s
@@ -9,6 +10,7 @@ const esc = (s) =>
 const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
 const project = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const ownLicense = fs.readFileSync("LICENSE", "utf8");
+const englishLicense = fs.readFileSync("LICENSE.en", "utf8");
 if (
   project.license !== "SEE LICENSE IN LICENSE" ||
   lock.packages[""].license !== project.license
@@ -25,6 +27,7 @@ const noticeText =
 fs.writeFileSync("THIRD_PARTY_NOTICES.md", noticeText);
 fs.mkdirSync("public/licenses", { recursive: true });
 fs.writeFileSync("public/LICENSE.txt", ownLicense);
+fs.writeFileSync("public/LICENSE.en.txt", englishLicense);
 fs.writeFileSync("public/THIRD_PARTY_NOTICES.txt", noticeText);
 const rows = [
   [
@@ -94,6 +97,16 @@ fs.writeFileSync(
   "docs/dependency-licenses.csv",
   rows.map((row) => row.map(csv).join(",")).join("\n") + "\n",
 );
+const englishNotices =
+  "# Third-party software notices\n\nMasu’s original components are governed by LICENSE. The components below retain their respective MIT licenses. The following copyright, permission and disclaimer text is reproduced without modification from the installed fixed versions.\n\n" +
+  licenses
+    .map(
+      ({ name, version, scope, source, text }) =>
+        `## ${name} ${version}\n\nUse: ${scope === "runtime" ? "Runtime library" : "Generated build helper (the tool itself is not distributed)"}\nLicense: MIT\nSource: ${source}\n\n${text.trimEnd()}\n`,
+    )
+    .join("\n");
+fs.writeFileSync("public/THIRD_PARTY_NOTICES.en.txt", englishNotices);
+const translatedPages = englishPages(englishLicense, englishNotices);
 const pages = {
   about: [
     "使い方・運営",
@@ -104,7 +117,7 @@ const pages = {
   ],
   privacy: [
     "プライバシー・外部送信",
-    "設定、途中の回答、直近30回・最大100問の結果を、この端末のブラウザ内（localStorage）に保存します。名前・メールアドレスの入力やアカウント登録は不要です。設定から保存内容を削除できます。端末・ブラウザ・公開先が変わると保存場所も変わり、端末間では同期しません。",
+    "設定、途中の回答、直近30回・最大100問の結果を、この端末のブラウザ内（localStorage）に保存します。表示言語の選択もこのブラウザ内に保存します。名前・メールアドレスの入力やアカウント登録は不要です。設定から保存内容を削除できます。端末・ブラウザ・公開先が変わると保存場所も変わり、端末間では同期しません。",
     "学習記録をサーバーへ送信する機能、広告、アクセス解析、外部フォント・外部画像の読み込みはありません。アプリ自身は広告・解析用Cookieを使用しません。",
     "GitHub Pages等のWeb配信元は、ページ取得の際にIPアドレスやブラウザ等の接続情報を処理する場合があります。配信事業者のプライバシー方針も確認してください。macOS版はMac上でページを配信し、同じWi-Fiの端末から接続する場合も学習記録は各端末のブラウザ内に保存します。",
     "広告や解析を導入する際には、送信先・情報・目的・必要な選択方法等を改めて表示します。現在の版では広告や解析のスクリプトを読み込みません。",
@@ -133,23 +146,75 @@ for (const [slug, [title, ...body]] of Object.entries(pages)) {
         "\n\n[README](../README.md) ／ [無償利用ライセンス](../LICENSE)\n",
     );
   fs.mkdirSync("public/" + slug, { recursive: true });
+  const render = (language, content) => {
+    const [heading, ...paragraphs] = content;
+    const en = language === "en";
+    const links = en
+      ? ["← Masu Home", "Help", "Terms", "Privacy", "Licenses"]
+      : ["← Masu ホーム", "使い方", "利用規約", "プライバシー", "ライセンス"];
+    const targets = [
+      "index.html",
+      "about/index.html",
+      "terms/index.html",
+      "privacy/index.html",
+      "licenses/index.html",
+    ];
+    return (
+      '<section data-language="' +
+      language +
+      '" data-title="' +
+      esc(heading) +
+      '"><nav>' +
+      links
+        .map(
+          (name, index) =>
+            '<a href="../' + targets[index] + '">' + esc(name) + "</a>",
+        )
+        .join("") +
+      "</nav><h1>" +
+      esc(heading) +
+      "</h1>" +
+      (slug === "about"
+        ? "<p>" +
+          (en ? "Support: " : "サポート：") +
+          '<a href="mailto:nobodyknowsxx@gmail.com">nobodyknowsxx@gmail.com</a></p><p><a href="https://keetane.github.io/Masu/">' +
+          (en ? "Open Masu" : "Webアプリを開く") +
+          '</a> ／ <a href="https://github.com/keetane/Masu">' +
+          (en ? "Repository" : "公開リポジトリ") +
+          '</a> ／ <a href="https://github.com/keetane/Masu/issues">' +
+          (en ? "Contact (GitHub Issues)" : "お問い合わせ（GitHub Issues）") +
+          "</a></p>"
+        : "") +
+      (slug === "licenses"
+        ? '<p><a href="../LICENSE' +
+          (en ? ".en" : "") +
+          '.txt">' +
+          (en
+            ? "Full free use license (text)"
+            : "無償利用ライセンス全文（テキスト）") +
+          '</a> ／ <a href="../THIRD_PARTY_NOTICES' +
+          (en ? ".en" : "") +
+          '.txt">' +
+          (en
+            ? "Full third-party notices (text)"
+            : "第三者の権利表示全文（テキスト）") +
+          "</a></p>"
+        : "") +
+      paragraphs.map((text) => "<p>" + esc(text) + "</p>").join("") +
+      "</section>"
+    );
+  };
   fs.writeFileSync(
     "public/" + slug + "/index.html",
     '<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' +
       esc(title) +
-      ' | Masu</title><style>body{font:16px/1.8 system-ui;background:#f8f7ef;color:#194c40;max-width:48rem;margin:3rem auto;padding:1rem}h1{font-size:clamp(1.4rem,5vw,2rem);line-height:1.5;text-wrap:balance}p{white-space:pre-wrap;overflow-wrap:anywhere}a{color:inherit}nav{display:flex;flex-wrap:wrap;gap:1rem}</style></head><body><main><nav><a href="../index.html">← Masu ホーム</a><a href="../about/index.html">使い方</a><a href="../terms/index.html">利用規約</a><a href="../privacy/index.html">プライバシー</a><a href="../licenses/index.html">ライセンス</a></nav><h1>' +
-      esc(title) +
-      "</h1>" +
-      (slug === "about"
-        ? '<p>サポート：<a href="mailto:nobodyknowsxx@gmail.com">nobodyknowsxx@gmail.com</a></p><p><a href="https://keetane.github.io/Masu/">Webアプリを開く</a> ／ <a href="https://github.com/keetane/Masu">公開リポジトリ</a> ／ <a href="https://github.com/keetane/Masu/issues">お問い合わせ（GitHub Issues）</a></p>'
-        : "") +
-      (slug === "licenses"
-        ? '<p><a href="../LICENSE.txt">無償利用ライセンス全文（テキスト）</a> ／ <a href="../THIRD_PARTY_NOTICES.txt">第三者の権利表示全文（テキスト）</a></p>'
-        : "") +
-      body.map((text) => "<p>" + esc(text) + "</p>").join("") +
+      ' | Masu</title><style>body{font:16px/1.8 system-ui;background:#f8f7ef;color:#194c40;max-width:48rem;margin:2rem auto;padding:1rem}h1{font-size:clamp(1.4rem,5vw,2rem);line-height:1.5;text-wrap:balance}p{white-space:pre-wrap;overflow-wrap:anywhere}a{color:inherit}nav{display:flex;flex-wrap:wrap;gap:1rem}[data-language]{display:none}html[lang="ja"] [data-language="ja"],html[lang="en"] [data-language="en"]{display:block}.language-switch{display:flex;justify-content:flex-end;gap:4px;margin-bottom:1rem}.language-switch button{display:grid;place-items:center;width:44px;min-height:44px;border:1px solid #d7d9cc;border-radius:8px;background:transparent;cursor:pointer}.language-switch [aria-pressed="true"]{background:#e5ecdf;border-color:#638371}.language-switch img{border:1px solid #b6bfb2;border-radius:2px}.language-switch button:focus-visible{outline:3px solid #bd7621;outline-offset:2px}</style><script src="../language.js"></script></head><body><main><div class="language-switch" role="group" aria-label="言語"><button type="button" data-set-language="ja" aria-label="日本語" title="日本語" aria-pressed="true"><img src="../flag-ja.svg" alt="" width="30" height="20"></button><button type="button" data-set-language="en" aria-label="English" title="English" aria-pressed="false"><img src="../flag-en.svg" alt="" width="30" height="20"></button></div>' +
+      render("ja", [title, ...body]) +
+      render("en", translatedPages[slug]) +
       "</main></body></html>",
   );
 }
+
 console.log(
   "License notices generated: 3 runtime packages + Vite/Rollup generated helpers; " +
     (rows.length - 1) +

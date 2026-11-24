@@ -26,6 +26,8 @@ Reactの上流[固定タグのLICENSE](https://github.com/react/react/blob/v19.2
 
 `THIRD_PARTY_NOTICES.md`と、Web配信物の`THIRD_PARTY_NOTICES.txt`・`licenses/index.html`へ全文を掲載する。独自部分のLICENSEもWeb成果物へ同梱する。ビルドでJS内のコメントが変化しても、利用者はフッターから全文を確認できる。
 
+英語表示にはLICENSE.enの参考訳と英語の通知案内を用意し、日本語原文が適用されることを明記する。日本語のLICENSEや第三者のMIT本文を置き換えず、両言語の全文を配信物へ保持する。日本・英国の国旗アイコンは外部素材ではなく本プロジェクトでSVGを描画し、追加の画像・フォント依存は導入しない。
+
 ## 開発用・OS固有の依存
 
 lockfileの全179項目を[台帳](docs/dependency-licenses.csv)へ記録する。直接／推移、実行／開発、配信有無、正確な版、SPDX表示、配布元、本文・NOTICE等の所在とSHA-256、確認範囲を残す。台帳に記載した開発用パッケージの全コードを配信しているわけではない。

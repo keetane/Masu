@@ -8,6 +8,7 @@
 | `macos/main.swift` | 本プロジェクト用ランチャー。AppleのAppKit・Network等のシステムAPIを利用 | macOSのみ | ソースは無償利用ライセンス。OS・SDK本体を同梱しない |
 | `artwork/masu.svg` | 本プロジェクト用に制作した四つの四角と加算記号の幾何図形。旧素材からの加工ではない | Web・macOS | 独自部分と同じ利用条件。名称・商標の登録調査は未実施 |
 | `public/masu.svg` | 上記SVGと同一データ | Web・macOS | 同上 |
+| `public/flag-ja.svg`・`public/flag-en.svg` | 日本・英国の国旗を表す幾何図形をSVGで新規描画。外部素材・アイコン集・絵文字を使わない | Web・macOS | 独自SVGコードは本プロジェクトの利用条件。言語切替ボタンで使用 |
 | `artwork/masu.png`・`Masu.icns` | 上記SVGから本プロジェクトのスクリプトで生成 | macOS | 同上。外部のアイコン集は使わない |
 | 盤面・罫線・筆算記号 | CSS・SVGの数字位置、横線、曲線を独自に描画 | Web・macOS | 旧画像・教材図版の転載なし |
 | 文書・操作説明・ヒント | 本プロジェクト用に制作。問題は算術条件から生成 | Web・macOS | 市販問題集・教材の問題データを収録しない |

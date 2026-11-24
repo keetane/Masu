@@ -11,6 +11,7 @@ import {
   divisionRowHeight,
 } from "./divisionLayout";
 import { useBoardScroll } from "./useBoardScroll";
+import { useI18n } from "./Language";
 
 export function WrittenBoard({
   w,
@@ -20,6 +21,8 @@ export function WrittenBoard({
   solved = false,
   onNormalize,
 }: BoardProps) {
+  const { t, language } = useI18n();
+  const separator = language === "ja" ? "、" : ", ";
   const ref = useBoardScroll(e.at, w, select);
   const layout = w.bracket
     ? divisionLayout(w, e, nav, !!select, solved)
@@ -83,9 +86,9 @@ export function WrittenBoard({
           key={key}
           className={classes}
           style={style}
-          aria-label={cell.label}
+          aria-label={t(cell.label)}
         >
-          {value}
+          {value === "余り" ? t("余り") : value}
         </span>
       );
     return (
@@ -98,7 +101,10 @@ export function WrittenBoard({
         tabIndex={active ? 0 : -1}
         aria-current={active ? "step" : undefined}
         aria-label={
-          cell.label + "、" + (value || "未入力") + (bad ? "、見直し" : "")
+          t(cell.label) +
+          separator +
+          (value || t("未入力")) +
+          (bad ? separator + t("見直し") : "")
         }
         onClick={() => select(step)}
       >
@@ -119,9 +125,14 @@ export function WrittenBoard({
     <div className="scrollboard division-paper" ref={ref}>
       {w.normalization && (
         <p className="normalization">
-          両方の小数点を右へ{w.normalization.shift}桁動かす
+          {t("両方の小数点を右へ" + w.normalization.shift + "桁動かす")}
           <br />
-          {w.normalization.dividend} ÷ {w.normalization.divisor} にして計算
+          {t(
+            w.normalization.dividend +
+              " ÷ " +
+              w.normalization.divisor +
+              " にして計算",
+          )}
         </p>
       )}
       <div

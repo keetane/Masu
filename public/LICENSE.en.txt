@@ -1,0 +1,31 @@
+Masu Free Use License 1.0
+November 23, 2026
+Identifier: LicenseRef-Masu-Free-Use (custom license)
+
+English translation for convenience. The Japanese LICENSE is the governing text. This translation does not grant additional rights or change third-party licenses.
+
+Copyright in Masu's original code, documentation, designs and icons belongs to the respective rights holders.
+
+1. Free use
+Masu published or distributed by the rights holders may be used free of charge by individuals, families, schools, tutoring services and other organizations to learn or teach written arithmetic. No usage, registration or license fee is required. Using Masu as a learning tool in paid lessons does not incur a fee for Masu itself. Users are responsible for connection and device costs.
+
+2. Copies needed to run the application
+For the uses above, permission is granted to load, save and run the published web application in a browser; install and run an application distributed by the rights holders; and obtain and build this repository to run it on your own devices or within your organization for your own use or classes. Retain this license and third-party notices.
+
+3. Source code and other original materials
+This license does not generally permit redistribution of modified original code or materials, republication for third parties, sale, sublicensing, or incorporation into other products. These uses require separate permission from the relevant rights holders. All rights not expressly granted are reserved. This is neither an open-source license such as MIT nor a waiver of copyright.
+
+4. Platform terms and statutory rights
+This license does not restrict viewing, forking or other uses permitted by the functionality and applicable terms of public services such as GitHub, or uses permitted by law.
+
+5. Third-party software
+Third-party software, including React, React DOM and Scheduler, is outside the scope of this license. Each component is governed by its own license, reproduced in THIRD_PARTY_NOTICES.md or on the web application's license page. This license does not restrict modification, commercial use, redistribution or other rights granted by third-party licenses.
+
+6. Name, advertising and learning data
+No trademark rights in names or logos, or rights to imply endorsement by the rights holders, are granted. The rights holders reserve their own rights to distribute the application and display advertising. This license does not acquire rights in users' learning records.
+
+7. Warranty and liability
+The application is provided as is, without guarantees of accuracy, fitness for a particular purpose, continued availability or data retention. To the extent permitted by applicable law, liability for damage arising from use or inability to use the application is excluded. This does not exclude liability for intentional misconduct, gross negligence or other liability that cannot be excluded by law.
+
+8. Scope
+This license applies to original components of the Masu version that includes this file. Where another license is expressly specified for a file or component, that license takes precedence.

@@ -76,6 +76,7 @@ npm test
 npm run build
 npm run test:licenses
 npm run test:publication
+npm run test:i18n
 ```
 
 `npm run build`は無償利用条件・第三者通知・静的ポリシーページを先に生成し、型チェックとViteビルドを実行します。`dist/`のみを配信します。`public/`やリポジトリ直下をそのまま配信しません。baseは相対パス、画面遷移はハッシュ方式です。プロジェクト名のサブパスでも動作することを公開準備試験で確認します。
@@ -83,5 +84,7 @@ npm run test:publication
 `dist/LICENSE.txt`、`dist/THIRD_PARTY_NOTICES.txt`、`dist/licenses/`を削除せず同梱してください。`dist/licenses/bundle-audit.json`は実際の外部モジュールとlockfileのハッシュを記録します。未確認の実行時依存、版・ライセンス本文の変更、ビルドへの未確認モジュールの混入はビルドを失敗させます。依存を更新するときは`scripts/license-policy.mjs`の版と本文ハッシュを確認し直します。
 
 `docs/dependency-licenses.csv`は全lockfile項目の台帳です。OS固有でインストールされていない任意依存や、ライセンス本文のない開発用依存は確認範囲を明記します。`node_modules/`、開発ツール本体、旧アプリを配布対象へ追加しないでください。
+
+日本語・英語のUI文言は`src/i18n.ts`、React側の言語状態は`src/Language.tsx`で管理します。初期値は日本語で、`masu:v1:language`に選択を保存します。静的案内ページは`scripts/pages.mjs`と`scripts/english-pages.mjs`から生成し、`public/language.js`で同じ選択を引き継ぎます。表示言語を変えても筆算エンジンや保存データの手順は変更しません。英語の参考訳・通知テキストと国旗SVGもdistへ同梱してください。
 
 公開先は https://keetane.github.io/Masu/ 、ソースは https://github.com/keetane/Masu です。mainへのpushまたは手動実行で、.github/workflows/pages.ymlが検証・ビルド後にdistのみをPagesへ公開します。ビルドとデプロイを分離し、公開権限はデプロイジョブだけに付けています。Actionは公式の固定コミットを使用します。広告は有効化していません。

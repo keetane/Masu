@@ -78,6 +78,19 @@ test("all reviewed notices retain exact upstream copyright and permission text",
   }
 });
 
+test("English license translation and notices preserve originals", () => {
+  const translated = read("LICENSE.en");
+  assert.match(translated, /Japanese LICENSE is the governing text/);
+  for (const dir of ["public", "dist"]) {
+    assert.equal(read(dir + "/LICENSE.en.txt"), translated);
+    assert.ok(read(dir + "/licenses/index.html").includes(escape(translated)));
+    for (const item of reviewedLicenses())
+      assert.ok(
+        read(dir + "/THIRD_PARTY_NOTICES.en.txt").includes(item.text.trimEnd()),
+      );
+  }
+});
+
 test("version changes fail until separately reviewed", () => {
   assert.throws(
     () =>
@@ -197,6 +210,11 @@ test("distribution contains only the application, policies and license records",
   const exact = new Set([
     "index.html",
     "masu.svg",
+    "flag-ja.svg",
+    "flag-en.svg",
+    "language.js",
+    "LICENSE.en.txt",
+    "THIRD_PARTY_NOTICES.en.txt",
     "LICENSE.txt",
     "THIRD_PARTY_NOTICES.txt",
     "about/index.html",

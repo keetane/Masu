@@ -800,3 +800,74 @@ button.division-target:disabled {
 .division-notes {
   overflow: visible;
 }
+
+.language-switch {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.language-switch button {
+  width: 44px;
+  min-height: 44px;
+  padding: 8px 6px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+}
+.language-switch button[aria-pressed="true"] {
+  background: #e5ecdf;
+  border-color: #638371;
+}
+.language-switch img {
+  width: 30px;
+  height: 20px;
+  border: 1px solid #b6bfb2;
+  border-radius: 2px;
+}
+.guide strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.history {
+  flex-wrap: wrap;
+  text-align: left;
+}
+@media (max-width: 650px) {
+  header {
+    height: auto;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    row-gap: 2px;
+    padding-block: 6px;
+  }
+  header .brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  header .language-switch {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  header nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+  }
+  header nav a {
+    padding-block: 7px;
+  }
+  .practice .scrollboard {
+    max-height: calc(100dvh - 420px);
+  }
+  html[lang="en"] .choices button {
+    font-size: 13px;
+    padding-inline: 4px;
+  }
+  html[lang="en"] .intro h1 {
+    font-size: 31px;
+    letter-spacing: -0.025em;
+  }
+  html[lang="en"] .intro > div:first-child {
+    min-width: 0;
+  }
+}
