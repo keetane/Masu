@@ -100,7 +100,7 @@ const pages = {
     "Masuは、たし算・ひき算・かけ算・わり算の筆算を練習できる無料のWebアプリです。アカウント登録は不要です。",
     "演算、難しさ、問題数を選んで「はじめる」を押します。強調された入力先に数字を入れると、ナビONでは次の位置へ進みます。「確認」で採点し、履歴から復習できます。",
     "個人・家庭・学校・塾で無償で利用できます。利用条件と第三者ソフトウェアの権利表示は、利用規約・ライセンスのページで確認できます。",
-    "運営：keetane（公開リポジトリの所有者）。不具合・権利に関する連絡は、下記のGitHub Issuesへお寄せください。学習履歴や個人情報を公開の場所へ投稿しないでください。",
+    "運営：keetane（公開リポジトリの所有者）。サポート・権利に関するお問い合わせは nobodyknowsxx@gmail.com へお寄せください。不具合の公開報告にはGitHub Issuesも利用できます。学習履歴や個人情報を公開の場所へ投稿しないでください。",
   ],
   privacy: [
     "プライバシー・外部送信",
@@ -141,7 +141,7 @@ for (const [slug, [title, ...body]] of Object.entries(pages)) {
       esc(title) +
       "</h1>" +
       (slug === "about"
-        ? '<p><a href="https://keetane.github.io/Masu/">Webアプリを開く</a> ／ <a href="https://github.com/keetane/Masu">公開リポジトリ</a> ／ <a href="https://github.com/keetane/Masu/issues">お問い合わせ（GitHub Issues）</a></p>'
+        ? '<p>サポート：<a href="mailto:nobodyknowsxx@gmail.com">nobodyknowsxx@gmail.com</a></p><p><a href="https://keetane.github.io/Masu/">Webアプリを開く</a> ／ <a href="https://github.com/keetane/Masu">公開リポジトリ</a> ／ <a href="https://github.com/keetane/Masu/issues">お問い合わせ（GitHub Issues）</a></p>'
         : "") +
       (slug === "licenses"
         ? '<p><a href="../LICENSE.txt">無償利用ライセンス全文（テキスト）</a> ／ <a href="../THIRD_PARTY_NOTICES.txt">第三者の権利表示全文（テキスト）</a></p>'

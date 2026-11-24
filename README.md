@@ -40,4 +40,4 @@ React等の第三者ソフトウェアには、それぞれのライセンスが
 
 ## 運営・お問い合わせ
 
-運営：keetane。[GitHub Issues](https://github.com/keetane/Masu/issues)で不具合や権利に関する連絡を受け付けます。個人情報・学習履歴は公開の場所へ投稿しないでください。
+運営：keetane。サポート・権利に関するお問い合わせは [nobodyknowsxx@gmail.com](mailto:nobodyknowsxx@gmail.com) へお寄せください。不具合の公開報告には[GitHub Issues](https://github.com/keetane/Masu/issues)も利用できます。個人情報・学習履歴は公開の場所へ投稿しないでください。
