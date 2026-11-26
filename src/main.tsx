@@ -20,6 +20,7 @@ import {
   type DecimalMove,
 } from "./normalization";
 import { Board } from "./Board";
+import { BugReport } from "./BugReport";
 import { LanguageProvider, LanguageSwitcher, useI18n } from "./Language";
 import "./style.css";
 const initial = load();
@@ -129,6 +130,7 @@ function App() {
   const [data, setData] = useState<Data>(initial.data),
     [notice, setNotice] = useState(initial.warning),
     [route, setRoute] = useState(location.hash.slice(2) || "home");
+  const [reportOpen, setReportOpen] = useState(false);
   const [hint, setHint] = useState(0),
     [feedback, setFeedback] = useState(""),
     [confirm, setConfirm] = useState(""),
@@ -286,6 +288,7 @@ function App() {
   useEffect(() => {
     function key(ev: KeyboardEvent) {
       if (
+        reportOpen ||
         normalizing ||
         route !== "practice" ||
         !e ||
@@ -341,11 +344,37 @@ function App() {
                   {t(caption)}
                 </a>
               ))}
+              <button
+                className="report-menu"
+                type="button"
+                aria-label={t("スクショで不具合を報告")}
+                title={t("スクショで不具合を報告")}
+                aria-haspopup="dialog"
+                aria-expanded={reportOpen}
+                onClick={() => setReportOpen(true)}
+              >
+                {t("報告")}
+              </button>
             </nav>
             <LanguageSwitcher />
           </div>
         </div>
       </header>
+      <BugReport
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        context={{
+          screen: {
+            home: "ホーム",
+            practice: "練習",
+            history: "履歴",
+            settings: "設定",
+            result: "練習の結果",
+          }[page],
+          expression: practice ? w.expr : undefined,
+          step: practice ? e.at + 1 + " / " + w.steps.length : undefined,
+        }}
+      />
       <main className={practice ? "practice" : ""}>
         {notice && <p role="status">{t(notice)}</p>}
         {page === "home" && (

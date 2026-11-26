@@ -77,6 +77,7 @@ npm run build
 npm run test:licenses
 npm run test:publication
 npm run test:i18n
+npm run test:report
 ```
 
 `npm run build`は無償利用条件・第三者通知・静的ポリシーページを先に生成し、型チェックとViteビルドを実行します。`dist/`のみを配信します。`public/`やリポジトリ直下をそのまま配信しません。baseは相対パス、画面遷移はハッシュ方式です。プロジェクト名のサブパスでも動作することを公開準備試験で確認します。
@@ -88,3 +89,5 @@ npm run test:i18n
 日本語・英語のUI文言は`src/i18n.ts`、React側の言語状態は`src/Language.tsx`で管理します。初期値は日本語で、`masu:v1:language`に選択を保存します。静的案内ページは`scripts/pages.mjs`と`scripts/english-pages.mjs`から生成し、`public/language.js`で同じ選択を引き継ぎます。表示言語を変えても筆算エンジンや保存データの手順は変更しません。英語の参考訳・通知テキストと国旗SVGもdistへ同梱してください。
 
 公開先は https://keetane.github.io/Masu/ 、ソースは https://github.com/keetane/Masu です。mainへのpushまたは手動実行で、.github/workflows/pages.ymlが検証・ビルド後にdistのみをPagesへ公開します。ビルドとデプロイを分離し、公開権限はデプロイジョブだけに付けています。Actionは公式の固定コミットを使用します。広告は有効化していません。
+
+不具合報告は`src/BugReport.tsx`と`src/report.ts`で実装しています。画像は10MBまでのPNG／JPEG／WebP／AVIF／HEIC／HEIFのうちブラウザで表示できるものを受け付けます。File共有の可否を確認してWeb Shareを使い、共有先への受け渡し後も送達済みとは表示しません。[W3C Web Share API](https://www.w3.org/TR/web-share/)に従い、非対応・拒否・キャンセルも扱います。メールリンクへ画像は自動添付せず、手動添付・本文コピー・画像保存を用意します。専用ブラウザ試験では共有APIを模擬し、実際のメール送信は行いません。

@@ -43,6 +43,8 @@ jobs:
         run: npm run test:publication
       - name: Test Japanese and English switching
         run: npm run test:i18n
+      - name: Test screenshot bug reports
+        run: npm run test:report
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Upload static site

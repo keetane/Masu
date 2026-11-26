@@ -11,6 +11,55 @@ export function readLanguage(): Language {
   }
 }
 const english: Record<string, string> = {
+  報告: "Report",
+  不具合報告: "Bug report",
+  スクショで不具合を報告: "Report a bug with a screenshot",
+  閉じる: "Close",
+  練習: "Practice",
+  送信先: "Send to",
+  画面: "Screen",
+  起きたこと: "What happened",
+  入力位置: "Input position",
+  動作環境: "Environment",
+  "端末でスクショを撮り、下から選んでください。送る前に、個人情報が写っていないか確認してください。":
+    "Take a screenshot on your device and choose it below. Check that it contains no personal information before sharing.",
+  "スクショ（PNG・JPEGなど、10MBまで）":
+    "Screenshot (PNG, JPEG, etc.; up to 10 MB)",
+  "画像を確認しています…": "Checking the image…",
+  選んだスクショのプレビュー: "Preview of the selected screenshot",
+  スクショを保存: "Save screenshot",
+  "起きたこと（必須）": "What happened (required)",
+  "例：割り算で次の数字の位置がずれます。操作手順も教えてください。":
+    "For example: the next digit is misplaced in division. Please include the steps that led to the problem.",
+  現在の問題と入力位置を報告に含める:
+    "Include the current question and input position",
+  "ブラウザ・画面サイズ・表示言語を報告に含める":
+    "Include browser, screen size and language",
+  "報告文（送る前に確認）": "Report text (review before sending)",
+  スクショと報告文を共有: "Share screenshot and report",
+  報告文をコピー: "Copy report text",
+  報告メールを開く: "Open report email",
+  "共有先でメールを選び、上の宛先へ送ってください。共有先によっては報告文の貼り付けも必要です。":
+    "Choose an email app and send to the address above. You may need to paste the report text depending on the app.",
+  "メール画面でスクショを添付してください。メールリンクには画像を自動添付できません。メールが開かない場合は、報告文をコピーして上の宛先へ送ってください。":
+    "Attach the screenshot in your email app. Email links cannot attach images automatically. If email does not open, copy the report text and send it to the address above.",
+  "画像と入力内容はこの画面内だけで扱い、自動送信・保存はしません。送信はメールや共有先で確定してください。":
+    "The image and draft stay on this page; they are not automatically sent or saved. Confirm sending in your email or sharing app.",
+  "PNG・JPEG・WebP・AVIF・HEIC・HEIFの画像を選んでください。":
+    "Choose a PNG, JPEG, WebP, AVIF, HEIC or HEIF image.",
+  "画像は10MB以下の空でないファイルを選んでください。":
+    "Choose a non-empty image of 10 MB or less.",
+  "画像を読み込めません。別のスクショを選んでください。":
+    "The image could not be read. Choose another screenshot.",
+  "共有先に渡しました。送信が完了したかは共有先で確認してください。":
+    "Handed over to the sharing app. Check that sending is complete in that app.",
+  "共有をキャンセルしました。入力内容は残っています。":
+    "Sharing cancelled. Your draft is still here.",
+  "共有できませんでした。報告文をコピーし、メールにスクショを添付してください。":
+    "Sharing was unavailable. Copy the report text and attach the screenshot to an email.",
+  "報告文をコピーしました。": "Report text copied.",
+  "報告文を選択しました。手動でコピーしてください。":
+    "The report text is selected. Copy it manually.",
   言語: "Language",
   ホーム: "Home",
   履歴: "History",

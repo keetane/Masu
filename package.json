@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "node scripts/pages.mjs && tsc --noEmit && vite build",
-    "test": "node --experimental-strip-types --test tests/engine.test.mjs tests/i18n.test.mjs",
+    "test": "node --experimental-strip-types --test tests/engine.test.mjs tests/i18n.test.mjs tests/report.test.mjs",
     "lint": "eslint src tests scripts/*.mjs public/language.js",
     "test:e2e": "node --experimental-strip-types tests/browser.mjs",
     "bundle": "npm run build && bash scripts/bundle.sh",
@@ -16,7 +16,8 @@
     "test:arithmetic": "node --experimental-strip-types tests/arithmetic-browser.mjs",
     "test:licenses": "node --test tests/licenses.test.mjs",
     "test:publication": "node tests/publication-browser.mjs",
-    "test:i18n": "node --experimental-strip-types tests/language-browser.mjs"
+    "test:i18n": "node --experimental-strip-types tests/language-browser.mjs",
+    "test:report": "node --experimental-strip-types tests/report-browser.mjs"
   },
   "dependencies": {
     "react": "19.2.7",
