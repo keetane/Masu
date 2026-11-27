@@ -50,15 +50,7 @@ try {
     await page.goto(base + slug + "/index.html");
     await page.reload();
     if (slug === "about") {
-      const support = page.getByRole("link", {
-        name: "nobodyknowsxx@gmail.com",
-        exact: true,
-      });
-      await support.waitFor({ state: "visible" });
-      assert.equal(
-        await support.getAttribute("href"),
-        "mailto:nobodyknowsxx@gmail.com",
-      );
+      assert.equal(await page.locator('a[href^="mailto:"]').count(), 0);
       assert.equal(
         await page
           .getByRole("link", { name: "お問い合わせ（GitHub Issues）" })

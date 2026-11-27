@@ -5,8 +5,8 @@ import {
   screenshotLimit,
   screenshotName,
   reportBody,
-  reportMailto,
-  supportEmail,
+  reportIssueUrl,
+  supportUrl,
 } from "../src/report.ts";
 test("screenshot validation rejects empty, oversized and active-content files", () => {
   for (const type of [
@@ -50,14 +50,23 @@ test("report includes only the selected context and optional environment", () =>
   assert.ok(full.includes("220 ÷ 6"));
   assert.ok(full.includes("4 / 10"));
   assert.ok(full.includes("Test browser"));
-  assert.ok(full.includes(supportEmail));
+  assert.ok(full.includes(supportUrl));
 });
-test("mailto safely preserves report punctuation, line breaks and Unicode", () => {
+test("GitHub issue link safely preserves report punctuation, line breaks and Unicode", () => {
   const body = "a+b & x=1\n日本語 😀 ? #",
-    url = new URL(reportMailto(body));
-  assert.equal(url.protocol, "mailto:");
-  assert.equal(url.pathname, supportEmail);
+    url = new URL(reportIssueUrl(body));
+  assert.equal(url.protocol, "https:");
+  assert.equal(url.origin + url.pathname, supportUrl + "/new");
   assert.equal(url.searchParams.get("body"), body);
-  assert.equal(url.searchParams.get("subject"), "Masu bug report");
-  assert.doesNotThrow(() => reportMailto("incomplete surrogate \ud800"));
+  assert.equal(url.searchParams.get("title"), "Masu bug report");
+  assert.doesNotThrow(() => reportIssueUrl("incomplete surrogate \ud800"));
+});
+
+test("long issue reports use copy fallback without truncation", () => {
+  const body = "あ".repeat(1000);
+  const url = new URL(reportIssueUrl(body));
+  assert.ok(url.href.length < 7500);
+  assert.equal(url.searchParams.get("body"), null);
+  assert.equal(url.origin + url.pathname, supportUrl + "/new");
+  assert.equal(url.searchParams.get("title"), "Masu bug report");
 });

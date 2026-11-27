@@ -1,5 +1,5 @@
 import { translate, type Language } from "./i18n.ts";
-export const supportEmail = "nobodyknowsxx@gmail.com";
+export const supportUrl = "https://github.com/keetane/Masu/issues";
 export const screenshotLimit = 10 * 1024 * 1024;
 export type ReportContext = {
   screen: string;
@@ -47,7 +47,7 @@ export function reportBody(options: {
   const t = (text: string) => translate(text, options.language);
   const lines = [
     "Masu — " + t("不具合報告"),
-    t("送信先") + ": " + supportEmail,
+    t("報告先") + ": " + supportUrl,
     "",
     t("起きたこと") + ":",
     options.description.trim(),
@@ -64,11 +64,13 @@ export function reportBody(options: {
   lines.push("", "https://keetane.github.io/Masu/");
   return lines.join("\n");
 }
-export function reportMailto(body: string): string {
-  const query = new URLSearchParams({ subject: "Masu bug report", body })
-    .toString()
-    .replaceAll("+", "%20");
-  return "mailto:" + supportEmail + "?" + query;
+export function reportIssueUrl(body: string): string {
+  const query = new URLSearchParams({ title: "Masu bug report", body });
+  const url = supportUrl + "/new?" + query;
+  // Long reports can exceed the server's request URL limit. Keep the draft
+  // available to copy and paste instead of truncating it.
+  if (url.length > 7500) query.delete("body");
+  return supportUrl + "/new?" + query;
 }
 export function canShareScreenshot(file: File | null): boolean {
   try {

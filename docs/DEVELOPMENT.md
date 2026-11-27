@@ -58,7 +58,7 @@ npm run bundle
 
 ## Web配信
 
-`dist/` を静的配信できます。相対baseとハッシュ遷移を使用しています。広告・外部解析の導入、広告アカウント登録、公開先へのデプロイは運営条件の確定後に行います。公開版の運営表示はkeetane、サポート窓口は nobodyknowsxx@gmail.com です。不具合の公開報告には公開リポジトリのGitHub Issuesも利用できます。
+`dist/` を静的配信できます。相対baseとハッシュ遷移を使用しています。広告・外部解析の導入、広告アカウント登録、公開先へのデプロイは運営条件の確定後に行います。公開版の運営表示はkeetane、お問い合わせ・不具合報告の窓口は公開リポジトリのGitHub Issuesです。個人メールアドレスは表示しません。
 
 - [設計指示書](../APP_DESIGN.md)
 - [権利・公開方針](../LICENSE_AND_RELEASE.md)
@@ -90,4 +90,4 @@ npm run test:report
 
 公開先は https://keetane.github.io/Masu/ 、ソースは https://github.com/keetane/Masu です。mainへのpushまたは手動実行で、.github/workflows/pages.ymlが検証・ビルド後にdistのみをPagesへ公開します。ビルドとデプロイを分離し、公開権限はデプロイジョブだけに付けています。Actionは公式の固定コミットを使用します。広告は有効化していません。
 
-不具合報告は`src/BugReport.tsx`と`src/report.ts`で実装しています。画像は10MBまでのPNG／JPEG／WebP／AVIF／HEIC／HEIFのうちブラウザで表示できるものを受け付けます。File共有の可否を確認してWeb Shareを使い、共有先への受け渡し後も送達済みとは表示しません。[W3C Web Share API](https://www.w3.org/TR/web-share/)に従い、非対応・拒否・キャンセルも扱います。メールリンクへ画像は自動添付せず、手動添付・本文コピー・画像保存を用意します。専用ブラウザ試験では共有APIを模擬し、実際のメール送信は行いません。
+不具合報告は`src/BugReport.tsx`と`src/report.ts`で実装しています。画像は10MBまでのPNG／JPEG／WebP／AVIF／HEIC／HEIFのうちブラウザで表示できるものを受け付けます。File共有の可否を確認してWeb Shareを使い、共有先への受け渡し後も送達済みとは表示しません。[W3C Web Share API](https://www.w3.org/TR/web-share/)に従い、非対応・拒否・キャンセルも扱います。GitHub Issuesの作成URLへタイトル・本文を渡し、画像はGitHub上で手動添付します。URLが7500文字を超える場合は本文を省略し、コピー・貼り付けで全文を渡します。[GitHubのIssue作成URL](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue#creating-an-issue-from-a-url-query)の仕様を使います。PNG・JPEG以外の対応画像は添付用PNGへ変換し、変換後の10MB制限も検証します。公開投稿・GitHubログインの必要性と、GitHub上で添付すると投稿前でも画像がアップロードされる点を案内します。専用ブラウザ試験では共有APIを模擬し、実際のIssue投稿やアップロードは行いません。

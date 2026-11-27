@@ -1016,7 +1016,7 @@ body:has(.bug-report[open]) {
   font-size: 14px;
   text-align: center;
 }
-.report-mail {
+.report-issue {
   display: grid;
   align-items: center;
   min-height: 44px;

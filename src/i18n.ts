@@ -16,7 +16,7 @@ const english: Record<string, string> = {
   スクショで不具合を報告: "Report a bug with a screenshot",
   閉じる: "Close",
   練習: "Practice",
-  送信先: "Send to",
+  報告先: "Report to",
   画面: "Screen",
   起きたこと: "What happened",
   入力位置: "Input position",
@@ -38,13 +38,17 @@ const english: Record<string, string> = {
   "報告文（送る前に確認）": "Report text (review before sending)",
   スクショと報告文を共有: "Share screenshot and report",
   報告文をコピー: "Copy report text",
-  報告メールを開く: "Open report email",
-  "共有先でメールを選び、上の宛先へ送ってください。共有先によっては報告文の貼り付けも必要です。":
-    "Choose an email app and send to the address above. You may need to paste the report text depending on the app.",
-  "メール画面でスクショを添付してください。メールリンクには画像を自動添付できません。メールが開かない場合は、報告文をコピーして上の宛先へ送ってください。":
-    "Attach the screenshot in your email app. Email links cannot attach images automatically. If email does not open, copy the report text and send it to the address above.",
-  "画像と入力内容はこの画面内だけで扱い、自動送信・保存はしません。送信はメールや共有先で確定してください。":
-    "The image and draft stay on this page; they are not automatically sent or saved. Confirm sending in your email or sharing app.",
+  GitHubで報告する: "Report on GitHub",
+  "GitHubへのログインが必要です。投稿内容と添付画像は公開されます。個人情報は含めないでください。":
+    "Sign in to GitHub to post. Your report and attachments will be public. Do not include personal information.",
+  "GitHubの作成画面でスクショを手動添付してください。報告文が入っていない場合は、コピーして貼り付けてください。投稿はGitHub上で確定します。":
+    "Attach the screenshot manually on GitHub. If the report text is missing, copy and paste it. Confirm posting on GitHub.",
+  "画像と報告文を他のアプリへ渡せます。GitHubへ投稿する場合は「GitHubで報告する」を使ってください。":
+    'You can share the image and report with other apps. To post on GitHub, use "Report on GitHub".',
+  "画像と入力内容はこの画面内だけで扱い、自動送信・保存はしません。GitHubの報告画面を開くと報告文が渡されます。":
+    "The image and draft stay on this page; they are not automatically sent or saved. Opening the GitHub report page passes the report text to GitHub.",
+  "添付用PNGが10MBを超えます。小さな画像を選んでください。":
+    "The PNG attachment exceeds 10 MB. Choose a smaller image.",
   "PNG・JPEG・WebP・AVIF・HEIC・HEIFの画像を選んでください。":
     "Choose a PNG, JPEG, WebP, AVIF, HEIC or HEIF image.",
   "画像は10MB以下の空でないファイルを選んでください。":
@@ -55,8 +59,8 @@ const english: Record<string, string> = {
     "Handed over to the sharing app. Check that sending is complete in that app.",
   "共有をキャンセルしました。入力内容は残っています。":
     "Sharing cancelled. Your draft is still here.",
-  "共有できませんでした。報告文をコピーし、メールにスクショを添付してください。":
-    "Sharing was unavailable. Copy the report text and attach the screenshot to an email.",
+  "共有できませんでした。報告文をコピーし、GitHubでスクショを添付してください。":
+    "Sharing was unavailable. Copy the report text and attach the screenshot on GitHub.",
   "報告文をコピーしました。": "Report text copied.",
   "報告文を選択しました。手動でコピーしてください。":
     "The report text is selected. Copy it manually.",

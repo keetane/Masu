@@ -75,7 +75,7 @@ try {
     });
   assert.ok(
     await dialog
-      .getByRole("button", { name: "報告メールを開く", exact: true })
+      .getByRole("button", { name: "GitHubで報告する", exact: true })
       .isDisabled(),
   );
   await description.pressSequentially("Bug 123");
@@ -114,6 +114,56 @@ try {
     buffer: Buffer.alloc(10 * 1024 * 1024 + 1),
   });
   await dialog.getByRole("alert").filter({ hasText: "10MB" }).waitFor();
+  const webp = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 8;
+    canvas.height = 6;
+    canvas.getContext("2d").fillRect(0, 0, 4, 4);
+    return canvas.toDataURL("image/webp").split(",")[1];
+  });
+  const webpFile = {
+    name: "converted.webp",
+    mimeType: "image/webp",
+    buffer: Buffer.from(webp, "base64"),
+  };
+  await input.setInputFiles(webpFile);
+  await dialog
+    .getByRole("img", { name: "選んだスクショのプレビュー" })
+    .waitFor();
+  const convertedDownload = page.waitForEvent("download");
+  await dialog
+    .getByRole("link", { name: "スクショを保存", exact: true })
+    .click();
+  const converted = await convertedDownload;
+  assert.equal(converted.suggestedFilename(), "masu-bug-report.png");
+  assert.deepEqual(
+    [...fs.readFileSync(await converted.path()).subarray(0, 8)],
+    [137, 80, 78, 71, 13, 10, 26, 10],
+  );
+  assert.deepEqual(
+    await page.evaluate(async () => {
+      const image = document.querySelector(".report-image img");
+      await image.decode();
+      return [image.naturalWidth, image.naturalHeight];
+    }),
+    [8, 6],
+  );
+  await page.evaluate(() => {
+    window.__originalToBlob = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (callback) {
+      callback(
+        new Blob([new Uint8Array(10 * 1024 * 1024 + 1)], { type: "image/png" }),
+      );
+    };
+  });
+  await input.setInputFiles(webpFile);
+  await dialog
+    .getByRole("alert")
+    .filter({ hasText: "添付用PNGが10MBを超えます" })
+    .waitFor();
+  await page.evaluate(() => {
+    HTMLCanvasElement.prototype.toBlob = window.__originalToBlob;
+  });
   await input.setInputFiles({
     name: "private-name.png",
     mimeType: "image/png",
@@ -140,14 +190,42 @@ try {
     })
     .uncheck();
   assert.ok(!(await draft.inputValue()).includes("Mozilla"));
-  const email = new URL(
+  const issue = new URL(
     await dialog
-      .getByRole("link", { name: "報告メールを開く", exact: true })
+      .getByRole("link", { name: "GitHubで報告する", exact: true })
       .getAttribute("href"),
   );
-  assert.equal(email.pathname, "nobodyknowsxx@gmail.com");
-  assert.equal(email.searchParams.get("body"), await draft.inputValue());
-  assert.ok((await dialog.innerText()).includes("画像を自動添付できません"));
+  assert.equal(
+    issue.origin + issue.pathname,
+    "https://github.com/keetane/Masu/issues/new",
+  );
+  assert.equal(issue.searchParams.get("body"), await draft.inputValue());
+  assert.equal(
+    await dialog
+      .getByRole("link", { name: "GitHubで報告する", exact: true })
+      .getAttribute("target"),
+    "_blank",
+  );
+  assert.ok((await dialog.innerText()).includes("投稿内容と添付画像は公開"));
+  assert.equal(await page.locator('a[href^="mailto:"]').count(), 0);
+  assert.ok((await dialog.innerText()).includes("スクショを手動添付"));
+  const shortDescription = await description.inputValue();
+  await description.fill("あ".repeat(1000));
+  const longIssue = new URL(
+    await dialog
+      .getByRole("link", { name: "GitHubで報告する", exact: true })
+      .getAttribute("href"),
+  );
+  assert.equal(longIssue.searchParams.get("body"), null);
+  await dialog
+    .getByRole("button", { name: "報告文をコピー", exact: true })
+    .click();
+  assert.equal(
+    await page.evaluate(() => window.__copiedReport),
+    await draft.inputValue(),
+  );
+  assert.ok((await draft.inputValue()).includes("あ".repeat(1000)));
+  await description.fill(shortDescription);
   const downloadPromise = page.waitForEvent("download");
   await dialog
     .getByRole("link", { name: "スクショを保存", exact: true })
@@ -236,7 +314,7 @@ try {
     .filter({ hasText: "共有先に渡しました" })
     .waitFor();
   const shared = await page.evaluate(() => window.__sharedReport);
-  assert.ok(shared.text.includes("nobodyknowsxx@gmail.com"));
+  assert.ok(shared.text.includes("https://github.com/keetane/Masu/issues"));
   assert.ok(shared.text.includes(w.expr));
   assert.deepEqual(shared.files, [
     {
@@ -341,7 +419,7 @@ try {
   assert.deepEqual(errors, []);
   assert.deepEqual(outside, []);
   console.log(
-    "PASS screenshot preview/validation/download, safe report context, keyboard isolation, clipboard and email fallback, mocked share/cancel/failure, JA/EN, modal focus and responsive menu; no automatic requests or sends",
+    "PASS screenshot preview/validation/download, safe report context, keyboard isolation, clipboard and GitHub issue fallback, mocked share/cancel/failure, JA/EN, modal focus and responsive menu; no automatic requests or sends",
   );
 } finally {
   await browser?.close();
