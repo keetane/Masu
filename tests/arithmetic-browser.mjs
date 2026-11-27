@@ -103,7 +103,7 @@ try {
         });
       await page.getByRole("button", { name: step.value, exact: true }).click();
     }
-    await page.getByRole("button", { name: "確認", exact: true }).click();
+    await page.getByRole("button", { name: "採点", exact: true }).click();
     await page.getByText("正解です！", { exact: true }).waitFor();
     if (p.op === 2 && Number(p.nums[1].replace(".", "")) < 10) {
       assert.equal(
@@ -156,7 +156,7 @@ try {
     { key: storageKey, data },
   );
   await page.reload();
-  await page.getByRole("button", { name: "確認", exact: true }).click();
+  await page.getByRole("button", { name: "採点", exact: true }).click();
   await page.getByText("正解です！", { exact: true }).waitFor();
   const resumed = await page.evaluate(
     (key) => JSON.parse(localStorage.getItem(key)).active.items[0],

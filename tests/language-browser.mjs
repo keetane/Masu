@@ -203,7 +203,7 @@ try {
         .getByRole("button", { name: w.steps[i].value, exact: true })
         .tap();
     }
-    await page.getByRole("button", { name: "Check", exact: true }).tap();
+    await page.getByRole("button", { name: "Grade", exact: true }).tap();
     await page.getByText("Correct!", { exact: true }).waitFor();
     if (p.op === 3 && p.nums[0] === "220")
       await page.getByText("Remainder", { exact: true }).waitFor();

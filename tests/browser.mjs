@@ -103,11 +103,11 @@ try {
         .getByRole("button", { name: w.steps[i].value, exact: true })
         .click();
     }
-    await page.getByRole("button", { name: "確認", exact: true }).click();
+    await page.getByRole("button", { name: "採点", exact: true }).click();
     await page.getByText("正解です！", { exact: true }).waitFor();
     if (p.op === 3)
       await page.screenshot({ path: "docs/screenshots/division.png" });
-    await page.getByRole("button", { name: "結果を見る →" }).click();
+    await page.getByRole("button", { name: "結果を見る" }).click();
     await page
       .getByRole("heading", { name: "練習の結果", exact: true })
       .waitFor();
@@ -142,13 +142,13 @@ try {
   );
   await page.goto(url + "#/practice");
   await page.reload();
-  await page.getByRole("button", { name: "確認", exact: true }).click();
+  await page.getByRole("button", { name: "採点", exact: true }).click();
   await page.getByText("印のついたマスを見直そう", { exact: true }).waitFor();
   await page.getByRole("button", { name: "ヒント", exact: true }).click();
   await page.getByRole("button", { name: "答えを見る", exact: true }).click();
   for (const digit of ["1", "4", "8"])
     await page.getByRole("button", { name: digit, exact: true }).click();
-  await page.getByRole("button", { name: "確認", exact: true }).click();
+  await page.getByRole("button", { name: "採点", exact: true }).click();
   await page.getByText("正解です！", { exact: true }).waitFor();
   for (const width of [320, 375, 390, 430]) {
     await page.setViewportSize({ width, height: 844 });
@@ -159,7 +159,7 @@ try {
     );
   }
   await page.screenshot({ path: "docs/screenshots/practice-mobile.png" });
-  await page.getByRole("button", { name: "結果を見る →" }).click();
+  await page.getByRole("button", { name: "結果を見る" }).click();
   await page.getByText("初回正答率 0%", { exact: false }).waitFor();
   console.log(
     "PASS home start, replace cancellation, incorrect correction, hints, mobile practice",

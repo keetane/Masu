@@ -153,7 +153,7 @@ try {
         .getByRole("button", { name: w.steps[index].value, exact: true })
         .click();
     }
-    await page.getByRole("button", { name: "確認", exact: true }).click();
+    await page.getByRole("button", { name: "採点", exact: true }).click();
     await page.getByText("正解です！", { exact: true }).waitFor();
     assert.equal(await page.locator(".loan,.reduced,.slashed").count(), 0);
     if (nums[0] === "739.0") {

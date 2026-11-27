@@ -1051,3 +1051,92 @@ body:has(.bug-report[open]) {
     padding: 16px;
   }
 }
+
+.grading-summary {
+  max-width: 480px;
+  margin: 10px auto;
+  padding: 12px;
+  border: 1px solid var(--edge);
+  border-left: 4px solid #69936e;
+  border-radius: 8px;
+  background: #eef3e8;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.grading-summary.incorrect {
+  border-left-color: #a64a34;
+  background: #fff0e9;
+}
+.grading-details {
+  font-size: 13px;
+  margin-top: 4px;
+}
+.grading-feedback {
+  font-size: 14px;
+  padding: 8px 0;
+}
+.mistake-count {
+  min-height: 44px;
+  min-width: 60px;
+  padding: 4px 10px;
+  color: #943c2c;
+  background: #fff0e9;
+  border: 2px solid #a64a34;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.grade-ok {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 60px;
+  color: #265e3e;
+  font-size: 22px;
+  font-weight: 700;
+}
+.grading-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+.assessment-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 64px;
+  min-height: 44px;
+  font-size: 14px;
+}
+.assessment-item.incorrect {
+  background: #fff0e9;
+  border: 2px solid #a64a34;
+  color: #943c2c;
+}
+.assessment-item.correct {
+  background: #e1ecd8;
+}
+.assessment-item[aria-current] {
+  outline: 3px solid #bd8c37;
+  outline-offset: 2px;
+}
+.assessment-incorrect {
+  color: #943c2c;
+}
+.pad button.practice-action {
+  height: 52px;
+  min-height: 52px;
+  padding: 4px 3px;
+  font-size: 16px;
+  line-height: 1.15;
+}
+.guide {
+  min-height: 44px;
+}
+.guide small {
+  width: 100px;
+  flex-shrink: 0;
+  text-align: right;
+}

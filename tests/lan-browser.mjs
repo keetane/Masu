@@ -61,12 +61,11 @@ try {
     const w = worksheet(state.active.items[i].p);
     for (const step of w.steps)
       await phone.getByRole("button", { name: step.value, exact: true }).tap();
-    await phone.getByRole("button", { name: "確認", exact: true }).tap();
+    await phone.getByRole("button", { name: "採点", exact: true }).tap();
     await phone.getByText("正解です！", { exact: true }).waitFor();
     await phone
       .getByRole("button", {
-        name:
-          i === state.active.items.length - 1 ? "結果を見る →" : "次の問題へ →",
+        name: i === state.active.items.length - 1 ? "結果を見る" : "次へ",
         exact: true,
       })
       .tap();

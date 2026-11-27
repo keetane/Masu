@@ -140,6 +140,34 @@ function App() {
     e = s?.items[s.index],
     w = useMemo(() => (e ? worksheet(e.p) : null), [e?.p]);
   const groups = w ? normalizationSteps(w) : null;
+  const complete = !!(
+    w &&
+    e &&
+    e.values.length === w.steps.length &&
+    e.values.every((value) => value !== "")
+  );
+  const wrongSteps =
+    w && e
+      ? w.steps.flatMap((step, index) =>
+          step.value === e.values[index] ? [] : [index],
+        )
+      : [];
+  const action =
+    complete && e?.checked
+      ? s!.index === s!.items.length - 1
+        ? "results"
+        : "next"
+      : complete
+        ? "grade"
+        : "confirm";
+  const actionLabel =
+    action === "results"
+      ? "結果を見る"
+      : action === "next"
+        ? "次へ"
+        : action === "grade"
+          ? "採点"
+          : "確認";
   const normalizing = !!(
     w?.normalization &&
     e &&
@@ -257,10 +285,16 @@ function App() {
     updateEntry({
       checked: true,
       first: e.first ?? bad < 0,
-      at: bad < 0 ? e.at : bad,
     });
-    setHint(0);
     setFeedback(bad < 0 ? "正解です！" : "印のついたマスを見直そう");
+  }
+  function primaryAction() {
+    if (action === "next" || action === "results") advance();
+    else check();
+  }
+  function nextMistake() {
+    if (e && wrongSteps.length)
+      select(wrongSteps.find((index) => index > e.at) ?? wrongSteps[0]);
   }
   function advance() {
     if (!s || !e?.checked) return;
@@ -303,7 +337,7 @@ function App() {
       else if (ev.key === "ArrowLeft") select(Math.max(0, e.at - 1));
       else if (ev.key === "ArrowRight") nextCell();
       else if (ev.key === "Enter" && !(ev.target instanceof HTMLButtonElement))
-        check();
+        primaryAction();
       else return;
       ev.preventDefault();
     }
@@ -523,16 +557,33 @@ function App() {
                   {t(
                     normalizing
                       ? "小数点を移動すると、筆算へ進みます"
-                      : feedback || w.steps[e.at].guide,
+                      : w.steps[e.at].guide,
                   )}
                 </strong>
                 <small>
-                  {t(
-                    normalizing
-                      ? e.at < groups!.divisor.length
-                        ? "1 / 2 操作"
-                        : "2 / 2 操作"
-                      : e.at + 1 + " / " + w.steps.length + " マス",
+                  {e.checked && complete ? (
+                    wrongSteps.length ? (
+                      <button
+                        className="mistake-count"
+                        aria-label={t("次の間違い") + ": " + wrongSteps.length}
+                        title={t("次の間違い")}
+                        onClick={nextMistake}
+                      >
+                        × {wrongSteps.length}
+                      </button>
+                    ) : (
+                      <span className="grade-ok" aria-label={t("全て正解")}>
+                        ○
+                      </span>
+                    )
+                  ) : (
+                    t(
+                      normalizing
+                        ? e.at < groups!.divisor.length
+                          ? "1 / 2 操作"
+                          : "2 / 2 操作"
+                        : e.at + 1 + " / " + w.steps.length + " マス",
+                    )
                   )}
                 </small>
               </div>
@@ -587,29 +638,55 @@ function App() {
                     ].map((k) => (
                       <button
                         key={k}
+                        className={k === "確認" ? "practice-action" : undefined}
+                        data-practice-action={k === "確認" ? action : undefined}
+                        aria-label={k === "確認" ? t(actionLabel) : undefined}
                         onClick={() =>
                           k === "消す"
                             ? erase()
                             : k === "確認"
-                              ? check()
+                              ? primaryAction()
                               : input(k)
                         }
                       >
-                        {t(k)}
+                        {t(k === "確認" ? actionLabel : k)}
                       </button>
                     ))}
                   </div>
                 </>
               )}
-              {e.checked && (
-                <button className="primary wide" onClick={advance}>
-                  {t(
-                    s.index === s.items.length - 1
-                      ? "結果を見る"
-                      : "次の問題へ",
-                  )}{" "}
-                  →
-                </button>
+              {e.checked && complete ? (
+                <div
+                  className={
+                    "grading-summary " +
+                    (wrongSteps.length ? "incorrect" : "correct")
+                  }
+                  role="status"
+                  data-grade-status={
+                    wrongSteps.length ? "incorrect" : "correct"
+                  }
+                >
+                  <strong>
+                    {t(
+                      wrongSteps.length
+                        ? "印のついたマスを見直そう"
+                        : "正解です！",
+                    )}
+                  </strong>
+                  {wrongSteps.length > 0 && (
+                    <div className="grading-details">
+                      <span>
+                        {t("不正解のマス")}: {wrongSteps.length}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                feedback && (
+                  <p className="grading-feedback" role="status">
+                    {t(feedback)}
+                  </p>
+                )
               )}
             </div>
           </>
@@ -761,6 +838,52 @@ function Result({
         </button>
       </div>
       <h2>{t("答え合わせ")}</h2>
+      <div
+        className="grading-overview"
+        role="group"
+        aria-label={t("問題ごとの採点結果")}
+      >
+        {s.items.map((item, j) => (
+          <button
+            key={j}
+            className={
+              "assessment-item " +
+              (item.first === false
+                ? "incorrect"
+                : item.first === true
+                  ? "correct"
+                  : "")
+            }
+            data-first-result={
+              item.first === false
+                ? "incorrect"
+                : item.first === true
+                  ? "correct"
+                  : "ungraded"
+            }
+            aria-current={i === j ? "true" : undefined}
+            aria-label={
+              t("問題") +
+              " " +
+              (j + 1) +
+              ", " +
+              t(
+                item.first === false
+                  ? "初回不正解"
+                  : item.first === true
+                    ? "初回正解"
+                    : "未採点",
+              )
+            }
+            onClick={() => setInspect(j)}
+          >
+            <span>{j + 1}</span>
+            <b aria-hidden="true">
+              {item.first === false ? "×" : item.first === true ? "○" : "—"}
+            </b>
+          </button>
+        ))}
+      </div>
       <label>
         {t("問題")}{" "}
         <select value={i} onChange={(ev) => setInspect(+ev.target.value)}>
@@ -772,6 +895,16 @@ function Result({
         </select>
       </label>
       <p>
+        <strong className={e.first === false ? "assessment-incorrect" : ""}>
+          {t(
+            e.first === false
+              ? "初回不正解"
+              : e.first === true
+                ? "初回正解"
+                : "未採点",
+          )}
+        </strong>
+        {"　"}
         {w.expr} ＝ {w.result}
         {w.remainder ? t(" 余り " + w.remainder) : ""}　
         {t(e.revealed ? "補助あり" : "")}

@@ -58,7 +58,7 @@ try {
   await page.getByRole("button", { name: "6", exact: true }).click();
   for (const digit of ["3", "6", "4", "4"])
     await page.getByRole("button", { name: digit, exact: true }).click();
-  await page.getByRole("button", { name: "確認", exact: true }).click();
+  await page.getByRole("button", { name: "採点", exact: true }).click();
   await page.getByText("正解です！", { exact: true }).waitFor();
   await page
     .locator(".scrollboard")
