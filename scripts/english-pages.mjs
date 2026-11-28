@@ -3,7 +3,7 @@ export function englishPages(license, notices) {
     about: [
       "Help & support",
       "Masu is a free web application for practicing written addition, subtraction, multiplication and division. No account is required.",
-      "Choose an operation, difficulty and number of questions, then select Start practice. Enter a digit at the highlighted position. With Auto ON, the next position is selected automatically. Once all positions are filled, select Grade. The same button becomes Next question, or See results on the final question. You can continue with incorrect answers and review marked questions later.",
+      "Choose an operation, difficulty and number of questions, then select Start practice. All required positions are visible from the start. Enter a digit at the current highlighted position. With Auto ON, the next position is selected automatically. Once all positions are filled, select Grade. The same button becomes Next question, or See results on the final question. You can continue with incorrect answers and review marked questions later.",
       "To report a bug with a screenshot, choose Report in the top menu. Review the screenshot and description, select Report on GitHub and attach the image manually on GitHub. Signing in is required; reports and attachments are public.",
       "Individuals, families, schools and tutoring services may use Masu free of charge. See Terms and Licenses for the conditions of use and third-party software notices.",
       "Operated by keetane, the owner of the public repository. Contact us and report bugs through GitHub Issues. You must sign in to GitHub. Reports and attachments are public; do not include personal information or learning records.",

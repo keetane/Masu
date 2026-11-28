@@ -47,6 +47,8 @@ jobs:
         run: npm run test:report
       - name: Test grading and next-button flow
         run: npm run test:grading
+      - name: Test complete worksheets from the start
+        run: npm run test:board
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Upload static site

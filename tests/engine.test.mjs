@@ -344,18 +344,17 @@ test("division saved answers survive removal of borrow steps", async () => {
     assert.deepEqual(upgradeSession(migrated), migrated);
   }
 });
-test("division layers keep digit columns fixed when a decimal point appears", async () => {
+test("division includes every decimal point and digit column from the start", async () => {
   const { divisionLayout } = await import("../src/divisionLayout.ts");
-  const w = worksheet({ op: 3, nums: ["739.0", "5.0"] }),
-    e = entry({ op: 3, nums: ["739.0", "5.0"] });
-  const before = divisionLayout(w, e, true, true, false);
+  const w = worksheet({ op: 3, nums: ["739.0", "5.0"] });
+  const layout = divisionLayout(w);
   const point = w.steps.findIndex((s) => s.guide === "商の小数点");
-  e.at = point;
-  const after = divisionLayout(w, e, true, true, false);
-  assert.equal(before.x(2) - before.x(1), 44);
-  assert.equal(after.x(2) - after.x(1), 44);
-  assert.equal(before.x(1), after.x(1));
-  assert.ok(after.points.length > before.points.length);
+  assert.equal(layout.x(2) - layout.x(1), 44);
+  assert.ok(layout.points.includes(w.steps[point].cell));
+  assert.equal(
+    layout.points.length,
+    w.cells.filter((cell) => cell.point).length,
+  );
 });
 test("carry notes share their digit's row without increasing row spacing", async () => {
   const { divisionLayout } = await import("../src/divisionLayout.ts");
@@ -363,7 +362,7 @@ test("carry notes share their digit's row without increasing row spacing", async
     w = worksheet(p),
     e = entry(p);
   e.at = w.steps.findIndex((s) => s.cell.annotation?.kind === "carry");
-  const layout = divisionLayout(w, e, true, true, false),
+  const layout = divisionLayout(w),
     note = layout.notes.find((c) => c.step === e.at);
   assert.ok(note);
   assert.ok(layout.rows.includes(note.annotation.row));
@@ -428,11 +427,8 @@ test("all arithmetic layouts use compact source rows and separate annotations", 
     { op: 1, nums: ["100", "1"] },
     { op: 2, nums: ["99", "99"] },
   ]) {
-    const w = worksheet(p),
-      e = entry(p);
-    e.values = w.steps.map((s) => s.value);
-    e.at = w.steps.length - 1;
-    const layout = arithmeticLayout(w, e, true, true, false);
+    const w = worksheet(p);
+    const layout = arithmeticLayout(w);
     assert.ok(layout.numbers.every((c) => !c.annotation));
     assert.ok(layout.notes.every((c) => c.annotation));
     assert.ok(layout.height >= layout.rows.length * 52);
@@ -444,28 +440,36 @@ test("all arithmetic layouts use compact source rows and separate annotations", 
         2,
       );
     if (p.op === 2) {
-      assert.ok(layout.notes.every((c) => w.steps[c.step].phase === "sum"));
-      e.at = w.steps.findIndex((s) => s.phase === "sum") - 1;
-      assert.ok(
-        arithmeticLayout(w, e, true, true, false).notes.every(
-          (c) => w.steps[c.step].phase !== "sum",
-        ),
+      assert.deepEqual(
+        layout.notes,
+        w.cells.filter((c) => c.annotation),
       );
+      assert.ok(layout.notes.some((c) => w.steps[c.step].phase === "sum"));
+      assert.ok(layout.notes.some((c) => w.steps[c.step].phase !== "sum"));
     }
   }
 });
 test("multiplication leaves room for carry notes after the operand rule", async () => {
   const { arithmeticLayout } = await import("../src/arithmeticLayout.ts");
-  const p = { op: 2, nums: ["27", "13"] },
-    w = worksheet(p),
-    e = entry(p);
-  e.values = w.steps.map((step) => step.value);
-  e.at = w.steps.findIndex((step) => step.phase === "sum");
-  const layout = arithmeticLayout(w, e, true, true, false);
+  const w = worksheet({ op: 2, nums: ["27", "13"] });
+  const layout = arithmeticLayout(w);
   assert.ok(layout.y(4) - layout.y(1) >= 76);
   assert.ok(
     layout.notes.every(
       (note) => layout.y(note.annotation.row) - 12 > layout.y(1) + 51,
     ),
   );
+});
+
+test("initial written layouts contain every required answer and annotation", async () => {
+  const { arithmeticLayout } = await import("../src/arithmeticLayout.ts");
+  const { divisionLayout } = await import("../src/divisionLayout.ts");
+  for (const [op, nums, , , fractional] of cases) {
+    const w = worksheet({ op, nums, fractional });
+    const layout = w.bracket ? divisionLayout(w) : arithmeticLayout(w);
+    const rendered = [...layout.numbers, ...layout.points, ...layout.notes];
+    for (const step of w.steps) assert.ok(rendered.includes(step.cell));
+    assert.equal(new Set(rendered).size, rendered.length);
+    assert.equal(rendered.length, w.cells.length - Number(!!w.bracket));
+  }
 });

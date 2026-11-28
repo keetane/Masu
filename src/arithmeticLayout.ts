@@ -1,43 +1,15 @@
 import type { Sheet } from "./engine";
-import type { Entry } from "./session";
 import {
   divisionDigitWidth as width,
   divisionRowHeight as height,
 } from "./divisionLayout.ts";
-export function arithmeticLayout(
-  w: Sheet,
-  e: Entry,
-  nav: boolean,
-  interactive: boolean,
-  solved: boolean,
-) {
-  const progressive = interactive && nav && !solved;
-  const sumStart = w.steps.findIndex((step) => step.phase === "sum");
-  const summing = sumStart >= 0 && (!interactive || solved || e.at >= sumStart);
-  const notes = w.cells.filter(
-    (cell) =>
-      cell.annotation &&
-      (sumStart < 0 || (w.steps[cell.step!].phase === "sum") === summing) &&
-      (!progressive || cell.step! <= e.at || !!e.values[cell.step!]),
-  );
+export function arithmeticLayout(w: Sheet) {
+  const notes = w.cells.filter((cell) => cell.annotation);
   const rows = [
     ...new Set(
       w.cells.filter((cell) => !cell.annotation).map((cell) => cell.row),
     ),
-  ]
-    .filter((row) => {
-      if (!progressive) return true;
-      const editable = w.cells.filter(
-        (cell) =>
-          cell.row === row && !cell.annotation && cell.step !== undefined,
-      );
-      return (
-        !editable.length ||
-        editable.some((cell) => cell.step! <= e.at || !!e.values[cell.step!]) ||
-        notes.some((cell) => cell.annotation!.row === row)
-      );
-    })
-    .sort((a, b) => a - b);
+  ].sort((a, b) => a - b);
   const main = w.cells.filter(
     (cell) => !cell.annotation && rows.includes(cell.row),
   );

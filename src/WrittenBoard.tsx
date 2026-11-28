@@ -24,9 +24,13 @@ export function WrittenBoard({
   const { t, language } = useI18n();
   const separator = language === "ja" ? "、" : ", ";
   const ref = useBoardScroll(e.at, w, select);
-  const layout = w.bracket
-    ? divisionLayout(w, e, nav, !!select, solved)
-    : arithmeticLayout(w, e, nav, !!select, solved);
+  const layout = w.bracket ? divisionLayout(w) : arithmeticLayout(w);
+  const normalizing = !!(
+    w.normalization &&
+    onNormalize &&
+    select &&
+    e.at < normalizationSteps(w).count
+  );
   const first = e.values.indexOf("");
   function renderCell(cell: Cell, layer: "number" | "point" | "note") {
     const step = cell.step,
@@ -36,19 +40,18 @@ export function WrittenBoard({
           : solved
             ? w.steps[step].value
             : e.values[step];
-    const active = !!select && step === e.at;
+    const active = !!select && !normalizing && step === e.at;
     const bad =
       step !== undefined &&
       !solved &&
-      (e.checked || (!!w.bracket && !!value)) &&
+      e.checked &&
       value !== w.steps[step].value;
-    const related = !!select && w.steps[e.at].related.includes(cell);
     const classes = [
       "division-target",
       layer,
       cell.span ? "caption" : "",
+      step !== undefined ? "answer-cell" : "",
       active ? "active" : "",
-      related ? "related" : "",
       bad ? "wrong" : "",
       cell.slash !== undefined && (solved || !!e.values[cell.slash])
         ? "slashed"
@@ -97,7 +100,9 @@ export function WrittenBoard({
         className={classes}
         style={style}
         data-step={step}
-        disabled={nav && first !== -1 && step > first && !value}
+        disabled={
+          normalizing || (nav && first !== -1 && step > first && !value)
+        }
         tabIndex={active ? 0 : -1}
         aria-current={active ? "step" : undefined}
         aria-label={
@@ -112,88 +117,86 @@ export function WrittenBoard({
       </button>
     );
   }
-  if (
-    w.normalization &&
-    onNormalize &&
-    select &&
-    e.at < normalizationSteps(w).count
-  )
-    return <DivisionNormalization w={w} e={e} onNormalize={onNormalize} />;
   const top = w.bracket ? layout.y(w.bracket.row) : 0,
     left = layout.x(0);
   return (
-    <div className="scrollboard division-paper" ref={ref}>
-      {w.normalization && (
-        <p className="normalization">
-          {t("両方の小数点を右へ" + w.normalization.shift + "桁動かす")}
-          <br />
-          {t(
-            w.normalization.dividend +
-              " ÷ " +
-              w.normalization.divisor +
-              " にして計算",
-          )}
-        </p>
+    <div className="board-stage">
+      {normalizing && (
+        <DivisionNormalization w={w} e={e} onNormalize={onNormalize} />
       )}
-      <div
-        className="board division-sheet"
-        style={{ width: layout.width, height: layout.height }}
-      >
+      <div className="scrollboard division-paper" ref={ref}>
+        {w.normalization && !normalizing && (
+          <p className="normalization">
+            {t("両方の小数点を右へ" + w.normalization.shift + "桁動かす")}
+            <br />
+            {t(
+              w.normalization.dividend +
+                " ÷ " +
+                w.normalization.divisor +
+                " にして計算",
+            )}
+          </p>
+        )}
         <div
-          className="division-digits"
-          style={{
-            gridTemplateColumns:
-              "repeat(" +
-              (layout.max - layout.min + 1) +
-              ", " +
-              divisionDigitWidth +
-              "px)",
-            gridTemplateRows: layout.tracks
-              .map((size) => size + "px")
-              .join(" "),
-          }}
+          className="board division-sheet"
+          style={{ width: layout.width, height: layout.height }}
         >
-          {layout.numbers.map((cell) => renderCell(cell, "number"))}
+          <div
+            className="division-digits"
+            style={{
+              gridTemplateColumns:
+                "repeat(" +
+                (layout.max - layout.min + 1) +
+                ", " +
+                divisionDigitWidth +
+                "px)",
+              gridTemplateRows: layout.tracks
+                .map((size) => size + "px")
+                .join(" "),
+            }}
+          >
+            {layout.numbers.map((cell) => renderCell(cell, "number"))}
+          </div>
+          <div className="division-points">
+            {layout.points.map((cell) => renderCell(cell, "point"))}
+          </div>
+          <div className="division-notes">
+            {layout.notes.map((cell) => renderCell(cell, "note"))}
+          </div>
+          <svg
+            className="division-rules"
+            width={layout.width}
+            height={layout.height}
+            aria-hidden="true"
+          >
+            {w.bracket && (
+              <DivisionMark
+                left={left}
+                top={top + 2}
+                right={layout.x(layout.max) + divisionDigitWidth}
+              />
+            )}
+            {layout.lines
+              .filter((line) => !w.bracket || line.row !== w.bracket.row)
+              .map((line, i) => {
+                const y = layout.y(line.row - 1) + divisionRowHeight - 1;
+                return (
+                  <path
+                    key={i}
+                    d={
+                      "M " +
+                      layout.x(line.left) +
+                      " " +
+                      y +
+                      " H " +
+                      (layout.x(Math.min(line.right, layout.max)) +
+                        divisionDigitWidth)
+                    }
+                  />
+                );
+              })}
+          </svg>
         </div>
-        <div className="division-points">
-          {layout.points.map((cell) => renderCell(cell, "point"))}
-        </div>
-        <div className="division-notes">
-          {layout.notes.map((cell) => renderCell(cell, "note"))}
-        </div>
-        <svg
-          className="division-rules"
-          width={layout.width}
-          height={layout.height}
-          aria-hidden="true"
-        >
-          {w.bracket && (
-            <DivisionMark
-              left={left}
-              top={top + 2}
-              right={layout.x(layout.max) + divisionDigitWidth}
-            />
-          )}
-          {layout.lines
-            .filter((line) => !w.bracket || line.row !== w.bracket.row)
-            .map((line, i) => {
-              const y = layout.y(line.row - 1) + divisionRowHeight - 1;
-              return (
-                <path
-                  key={i}
-                  d={
-                    "M " +
-                    layout.x(line.left) +
-                    " " +
-                    y +
-                    " H " +
-                    (layout.x(Math.min(line.right, layout.max)) +
-                      divisionDigitWidth)
-                  }
-                />
-              );
-            })}
-        </svg>
       </div>
     </div>
   );

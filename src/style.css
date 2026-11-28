@@ -624,8 +624,8 @@ button.division-target:disabled {
   color: #557469;
   border-radius: 4px;
 }
-.division-target.related {
-  background: #e9f0e3;
+.division-target.answer-cell {
+  border-color: #c4cebb;
 }
 .division-target.active {
   background: #ffdf95;
@@ -1139,4 +1139,11 @@ body:has(.bug-report[open]) {
   width: 100px;
   flex-shrink: 0;
   text-align: right;
+}
+
+.board-stage {
+  min-width: 0;
+}
+.board-stage > .normalization-card {
+  margin-bottom: 12px;
 }

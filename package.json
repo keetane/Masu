@@ -18,7 +18,8 @@
     "test:publication": "node tests/publication-browser.mjs",
     "test:i18n": "node --experimental-strip-types tests/language-browser.mjs",
     "test:report": "node --experimental-strip-types tests/report-browser.mjs",
-    "test:grading": "node --experimental-strip-types tests/grading-browser.mjs"
+    "test:grading": "node --experimental-strip-types tests/grading-browser.mjs",
+    "test:board": "node --experimental-strip-types tests/board-browser.mjs"
   },
   "dependencies": {
     "react": "19.2.7",
