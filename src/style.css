@@ -627,6 +627,10 @@ button.division-target:disabled {
 .division-target.answer-cell {
   border-color: #c4cebb;
 }
+.division-target.related {
+  background: #eaf0e5;
+  border-color: #cad7bd;
+}
 .division-target.active {
   background: #ffdf95;
   border: 2px solid #966420;
@@ -1146,4 +1150,9 @@ body:has(.bug-report[open]) {
 }
 .board-stage > .normalization-card {
   margin-bottom: 12px;
+}
+
+.normalization-operand.current .decimal-digits span {
+  background: #eaf0e5;
+  border-radius: 4px;
 }

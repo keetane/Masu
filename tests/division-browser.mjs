@@ -51,9 +51,9 @@ try {
   await page.screenshot({
     path: "docs/screenshots/division-220-6-bring-down.png",
   });
-  // During entry only the current position is highlighted; grading marks mistakes.
+  // Related operands are highlighted without grading errors during entry.
   await page.getByRole("button", { name: "1", exact: true }).click();
-  assert.equal(await page.locator(".wrong,.related").count(), 0);
+  assert.equal(await page.locator(".wrong").count(), 0);
   await page.getByRole("button", { name: "前のマス", exact: true }).click();
   await page.getByRole("button", { name: "6", exact: true }).click();
   for (const digit of ["3", "6", "4", "4"])

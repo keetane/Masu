@@ -49,7 +49,37 @@ try {
       w.steps.map((_, i) => i),
     );
     assert.equal(await page.locator(".division-target.active").count(), count);
-    assert.equal(await page.locator(".related").count(), 0);
+    const active = count
+      ? await page.locator(".division-target.active").getAttribute("data-step")
+      : null;
+    const expectedSources =
+      active === null
+        ? []
+        : w.steps[Number(active)].related
+            .filter((cell) => cell !== w.steps[Number(active)].cell)
+            .map((cell) => w.cells.indexOf(cell))
+            .sort((a, b) => a - b);
+    const actualSources = await page
+      .locator(".related")
+      .evaluateAll((nodes) =>
+        nodes.map((n) => Number(n.dataset.cell)).sort((a, b) => a - b),
+      );
+    assert.deepEqual(
+      actualSources,
+      expectedSources,
+      "Only the current calculation sources should be lightly highlighted",
+    );
+    if (actualSources.length) {
+      assert.notEqual(
+        await page
+          .locator(".related")
+          .first()
+          .evaluate((n) => getComputedStyle(n).backgroundColor),
+        await page
+          .locator(".active")
+          .evaluate((n) => getComputedStyle(n).backgroundColor),
+      );
+    }
     assert.ok(
       await page
         .locator("[data-step]")
@@ -69,6 +99,7 @@ try {
     { op: 1, nums: ["100", "1"] },
     { op: 1, nums: ["302", "178"] },
     { op: 2, nums: ["27", "13"] },
+    { op: 2, nums: ["776", "46"] },
     { op: 2, nums: ["9999", "9999"] },
     { op: 2, nums: ["66", "8"] },
     { op: 2, nums: ["0.1", "0.1"] },
@@ -148,6 +179,10 @@ try {
         String(i),
       );
       await assertAllCells(w);
+      if (p.nums[0] === "776" && i === 2)
+        await page.locator(".scrollboard").screenshot({
+          path: "docs/screenshots/related-multiplication-776-46.png",
+        });
       assert.ok(
         await page.locator(".division-target.active").evaluate((n) => {
           const r = n.getBoundingClientRect(),
@@ -202,7 +237,7 @@ try {
   assert.deepEqual(errors, []);
   assert.deepEqual(outside, []);
   console.log(
-    "PASS all required cells and notes from start, fixed geometry, current-only entry highlight, normalization, navigation, grading, reload, JA/EN and responsive widths",
+    "PASS all required cells and notes from start, fixed geometry, precise calculation-source highlights, normalization, navigation, grading, reload, JA/EN and responsive widths",
   );
 } catch (error) {
   if (page && !page.isClosed())

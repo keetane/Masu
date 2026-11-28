@@ -46,12 +46,19 @@ export function WrittenBoard({
       !solved &&
       e.checked &&
       value !== w.steps[step].value;
+    const related =
+      !!select &&
+      !solved &&
+      !normalizing &&
+      cell !== w.steps[e.at].cell &&
+      w.steps[e.at].related.includes(cell);
     const classes = [
       "division-target",
       layer,
       cell.span ? "caption" : "",
       step !== undefined ? "answer-cell" : "",
       active ? "active" : "",
+      related ? "related" : "",
       bad ? "wrong" : "",
       cell.slash !== undefined && (solved || !!e.values[cell.slash])
         ? "slashed"
@@ -87,6 +94,7 @@ export function WrittenBoard({
       return (
         <span
           key={key}
+          data-cell={key}
           className={classes}
           style={style}
           aria-label={t(cell.label)}
@@ -97,6 +105,7 @@ export function WrittenBoard({
     return (
       <button
         key={key}
+        data-cell={key}
         className={classes}
         style={style}
         data-step={step}

@@ -473,3 +473,114 @@ test("initial written layouts contain every required answer and annotation", asy
     assert.equal(rendered.length, w.cells.length - Number(!!w.bracket));
   }
 });
+
+test("source highlights select the current digits and the incoming carry", () => {
+  const w = worksheet({ op: 2, nums: ["776", "46"] });
+  const fixed = (row, col) =>
+    w.cells.find(
+      (c) => c.row === row && c.col === col && c.step === undefined && !c.point,
+    );
+  assert.equal(w.steps[2].hint, "7 × 6 ＋ 3 を計算しよう");
+  assert.deepEqual(w.steps[2].related, [
+    fixed(0, -1),
+    fixed(1, 0),
+    w.steps[0].cell,
+  ]);
+  assert.deepEqual(w.steps[3].related, w.steps[2].related);
+  assert.deepEqual(w.steps[4].related, [
+    fixed(0, -2),
+    fixed(1, 0),
+    w.steps[2].cell,
+  ]);
+  const a = worksheet({ op: 0, nums: ["46", "38"] });
+  assert.deepEqual(
+    a.steps[0].related.map((c) => c.text),
+    ["6", "8"],
+  );
+  assert.deepEqual(a.steps[2].related, [
+    a.cells.find((c) => c.row === 2 && c.col === -1 && !c.annotation),
+    a.cells.find((c) => c.row === 3 && c.col === -1),
+    a.steps[0].cell,
+  ]);
+  const final = w.steps.find((step) => step.phase === "sum");
+  assert.ok(
+    final.related.every(
+      (c) => c.col === final.cell.col && c.step !== undefined,
+    ),
+  );
+});
+test("source highlights follow borrowing, division stages, remainder copies and decimal places", () => {
+  const sub = worksheet({ op: 1, nums: ["302", "178"] });
+  const donor = sub.cells.find(
+    (c) => c.row === 2 && c.col === -2 && !c.annotation,
+  );
+  assert.deepEqual(sub.steps[1].related, [donor, sub.steps[0].cell]);
+  assert.ok(sub.steps[3].related.includes(sub.steps[0].cell));
+  assert.ok(
+    sub.steps[3].related.some(
+      (c) => c.row === 2 && c.col === -1 && !c.annotation,
+    ),
+  );
+  const tens = sub.steps.find((s) => s.guide === "十の位の差");
+  assert.equal(tens.related.length, 2);
+  assert.ok(tens.related.some((c) => c.annotation?.kind === "reduced"));
+  assert.ok(
+    !tens.related.some((c) => c.row === 2 && c.col === -1 && !c.annotation),
+  );
+  const w = worksheet({ op: 3, nums: ["220", "6"] });
+  const divisor = w.cells.find(
+    (c) => c.text === "6" && c.label === "問題の数字",
+  );
+  const dividend = w.cells.filter((c) => c.label === "割られる数");
+  assert.deepEqual(w.steps[0].related, [...dividend.slice(0, 2), divisor]);
+  assert.deepEqual(w.steps[5].related, [
+    w.steps[3].cell,
+    w.steps[4].cell,
+    divisor,
+  ]);
+  assert.deepEqual(w.steps[6].related, [divisor, w.steps[5].cell]);
+  assert.deepEqual(w.steps[3].related, [
+    ...dividend.slice(0, 2),
+    w.steps[1].cell,
+    w.steps[2].cell,
+  ]);
+  assert.deepEqual(w.steps.at(-1).related, [w.steps.at(-2).cell]);
+  const long = worksheet({ op: 3, nums: ["201", "13"] });
+  const product = long.steps.find((s) => s.guide === "積の数字");
+  assert.equal(product.related[0].text, "3");
+  assert.equal(product.related[1].label, "商を立てる");
+  const decimal = worksheet({ op: 2, nums: ["12.3", "0.4"] });
+  const point = decimal.steps.find((s) => s.guide === "積の小数点");
+  assert.deepEqual(
+    point.related.filter((c) => !c.point).map((c) => c.text),
+    ["3", "4"],
+  );
+  assert.equal(point.related.filter((c) => c.point).length, 2);
+  const divisionPoint = worksheet({
+    op: 3,
+    nums: ["1", "8"],
+    fractional: true,
+  }).steps.find((s) => s.guide === "商の小数点");
+  assert.equal(divisionPoint.related.length, 1);
+  assert.ok(divisionPoint.related[0].point);
+  for (const p of [
+    { op: 0, nums: ["99", "99", "99"] },
+    { op: 1, nums: ["100", "1"] },
+    { op: 2, nums: ["9999", "9999"] },
+    { op: 2, nums: ["0.1", "0.1"] },
+    { op: 3, nums: ["739.0", "5.0"] },
+  ]) {
+    const sheet = worksheet(p);
+    for (const step of sheet.steps) {
+      assert.equal(new Set(step.related).size, step.related.length);
+      assert.ok(
+        step.related.every((c) => sheet.cells.includes(c) && c !== step.cell),
+      );
+      if (
+        !step.guide.includes("整数にした割る数") &&
+        !step.guide.includes("同じ倍率にした割られる数")
+      )
+        assert.ok(step.related.length > 0);
+    }
+  }
+});

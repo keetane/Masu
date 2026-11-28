@@ -93,7 +93,13 @@ export function worksheet(
   ) {
     const c = cell(row, col, "", guide, point);
     c.step = steps.length;
-    steps.push({ cell: c, value: String(value), guide, hint, related });
+    steps.push({
+      cell: c,
+      value: String(value),
+      guide,
+      hint,
+      related: [...new Set(related)],
+    });
     return c;
   }
   function sum(values: number[], refs: Cell[][], row: number, aux: number) {
@@ -155,13 +161,19 @@ export function worksheet(
           working[k - 1] += 10;
           if (anchorRow !== undefined && !options.divisionBorrowNotes) continue;
           const origin = current[k];
+          const donorSources = [
+            origin,
+            origin?.annotation?.kind === "loan"
+              ? source.find((c) => c.col === end - k)
+              : undefined,
+          ].filter((c): c is Cell => !!c);
           const loan = write(
             tenRow,
             end - k + 1,
             1,
             "借りた1",
             "左の位から10を借りよう",
-            origin ? [origin] : [],
+            donorSources,
           );
           loan.annotation = {
             row: anchorRow ?? source[0].row,
@@ -175,7 +187,7 @@ export function worksheet(
             working[k],
             "借り元の数字",
             "貸した位を1減らそう",
-            [loan],
+            [...donorSources, loan],
           );
           current[k].annotation = {
             row: anchorRow ?? source[0].row,
@@ -192,11 +204,15 @@ export function worksheet(
           working[p] - sub,
           place(p) + "の位の差",
           working[p] + " から " + sub + " を引こう",
-          [
-            current[p],
-            source.find((c) => c.col === end - p),
-            bottom.find((c) => c.col === end - p),
-          ].filter((c): c is Cell => !!c),
+          anchorRow !== undefined && !options.divisionBorrowNotes
+            ? [...source, ...bottom]
+            : [
+                current[p],
+                current[p]?.annotation?.kind === "loan"
+                  ? source.find((c) => c.col === end - p)
+                  : undefined,
+                bottom.find((c) => c.col === end - p),
+              ].filter((c): c is Cell => !!c),
         );
     }
   }
@@ -205,21 +221,32 @@ export function worksheet(
     m: number,
     end: number,
     row: number,
-    refs: Cell[],
+    topRefs: Cell[],
+    multiplier: Cell,
     compact = false,
   ) {
     let carry = 0;
+    let previous: Cell | undefined;
     const ds = digits(top),
       out: Cell[] = [];
     if (!m)
       return [
-        write(row, end, 0, "部分積", "0をかけるといくつになるかな", refs),
+        write(row, end, 0, "部分積", "0をかけるといくつになるかな", [
+          ...topRefs,
+          multiplier,
+        ]),
       ];
     ds.forEach((d, p) => {
       const n = d * m + carry;
       const hint =
         d + " × " + m + (carry ? " ＋ " + carry : "") + " を計算しよう";
+      const related = [
+        topRefs[topRefs.length - 1 - p],
+        multiplier,
+        previous,
+      ].filter((c): c is Cell => !!c);
       carry = Math.floor(n / 10);
+      previous = undefined;
       if (carry) {
         const last = p + 1 === ds.length;
         const c = write(
@@ -228,13 +255,14 @@ export function worksheet(
           carry,
           last ? "積の左端" : "積の繰り上がり",
           hint,
-          refs,
+          related,
         );
+        if (!last) previous = c;
         if (compact && !last)
           c.annotation = { row, col: end - p - 1, kind: "carry" };
         if (last) out.push(c);
       }
-      out.push(write(row, end - p, n % 10, "積の数字", hint, refs));
+      out.push(write(row, end - p, n % 10, "積の数字", hint, related));
     });
     return out.sort((x, y) => x.col - y.col);
   }
@@ -274,7 +302,8 @@ export function worksheet(
           m,
           -p,
           4 + 2 * p,
-          [...refs[0], refs[1][refs[1].length - 1 - p]],
+          refs[0],
+          refs[1][refs[1].length - 1 - p],
           true,
         ),
       );
@@ -297,15 +326,28 @@ export function worksheet(
     const decimals = scale(nums[0]) + scale(nums[1]);
     const raw = String(a * b).padStart(decimals + 1, "0");
     if (decimals) {
+      const decimalSources = cells
+        .filter((c) => c.point && c.row < 2)
+        .flatMap((point) => [
+          point,
+          ...refs[point.row].filter((c) => c.col > point.col),
+        ]);
       for (let p = String(a * b).length; p < raw.length; p++)
-        write(final, -p, 0, "小数の位取り", "小数点に必要な0を書こう");
+        write(
+          final,
+          -p,
+          0,
+          "小数の位取り",
+          "小数点に必要な0を書こう",
+          decimalSources,
+        );
       write(
         final,
         -decimals,
         ".",
         "積の小数点",
         "かける数とかけられる数の小数の桁数を合わせよう",
-        [],
+        decimalSources,
         true,
       );
     }
@@ -322,6 +364,8 @@ export function worksheet(
     const decimal = !!problem.fractional || nums.some((s) => scale(s) > 0);
     const topRow = shift ? 6 : 3;
     let normalized: Cell[] = [];
+    let divisorRefs: Cell[];
+    let dividendPoint: Cell | undefined;
     const divisorEnd = -2;
     if (shift) {
       normalization = {
@@ -331,7 +375,7 @@ export function worksheet(
         divisor: String(divisor),
         shift,
       };
-      Array.from(String(divisor), (d, i) =>
+      divisorRefs = Array.from(String(divisor), (d, i) =>
         write(
           topRow,
           divisorEnd - String(divisor).length + 1 + i,
@@ -350,10 +394,11 @@ export function worksheet(
         ),
       );
     } else {
-      fixedNumber(String(divisor), topRow, divisorEnd);
+      divisorRefs = fixedNumber(String(divisor), topRow, divisorEnd);
       normalized = Array.from(raw, (d, i) => cell(topRow, i, d, "割られる数"));
     }
-    if (remScale) cell(topRow, integerLength - 1, ".", "小数点", true);
+    if (remScale)
+      dividendPoint = cell(topRow, integerLength - 1, ".", "小数点", true);
     bracket = cell(topRow, -1, "⟌", "割り算の括弧");
     let working = 0,
       cycle = 0,
@@ -378,6 +423,7 @@ export function worksheet(
             true,
           );
           point.revealAt = steps.length;
+          dividendPoint = point;
         }
         const quotientPoint = write(
           topRow - 3,
@@ -385,7 +431,7 @@ export function worksheet(
           ".",
           "商の小数点",
           "割られる数の小数点にそろえよう",
-          [],
+          dividendPoint ? [dividendPoint] : [],
           true,
         );
         quotientPoint.revealAt = quotientPoint.step;
@@ -408,6 +454,9 @@ export function worksheet(
         r = working;
         continue;
       }
+      const source = cycle
+        ? prev
+        : normalized.slice(i - String(working).length + 1, i + 1);
       const digit = Math.floor(working / divisor);
       q += String(digit);
       const quotient = write(
@@ -416,22 +465,27 @@ export function worksheet(
         digit,
         "商を立てる",
         working + " に " + divisor + " がいくつ入るかな",
-        [normalized[i]],
+        [...source, ...divisorRefs],
       );
       quotient.revealAt = quotient.step;
       r = working % divisor;
       if (dividend === 0) break;
       const base = topRow + cycle * 7;
-      const prod = product(divisor, digit, i, base + 3, [quotient], true);
+      const prod = product(
+        divisor,
+        digit,
+        i,
+        base + 3,
+        divisorRefs,
+        quotient,
+        true,
+      );
       cell(base + 3, i - String(working).length, "−", "途中の引き算");
       lines.push({
         row: base + 4,
         left: i - String(working).length + 1,
         right: i,
       });
-      const source = cycle
-        ? prev
-        : normalized.slice(i - String(working).length + 1, i + 1);
       difference(
         working,
         divisor * digit,
@@ -455,7 +509,14 @@ export function worksheet(
       const row = topRow + cycle * 7 + 2;
       cell(row, -2, "余り", "余り").span = 2;
       Array.from(String(r), (d, i) =>
-        write(row, i, d, "最後の余り", "最後の差を書こう"),
+        write(
+          row,
+          i,
+          d,
+          "最後の余り",
+          "最後の差を書こう",
+          prev[i] ? [prev[i]] : [],
+        ),
       );
     }
   }
